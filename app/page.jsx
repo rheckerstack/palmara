@@ -177,10 +177,13 @@ export default function PalmaraApp() {
   const [paywall, setPaywall] = useState(null);
   const [activePillar, setActivePillar] = useState(null);
   const [exportDone, setExportDone] = useState(false);
+  const [firstHandReading, setFirstHandReading] = useState("");
+  const [imageMediaType, setImageMediaType] = useState("image/jpeg");
   const fileRef = useRef();
 
   const handleFile = useCallback((file) => {
     setImageUrl(URL.createObjectURL(file));
+    setImageMediaType(file.type || "image/jpeg");
     const r = new FileReader();
     r.onload = e => setImageB64(e.target.result.split(",")[1]);
     r.readAsDataURL(file);
@@ -232,10 +235,15 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
       full: `Give a complete reading covering heart line, head line, life line, fate line, and key mounts. ${zodiac ? `Weave in their ${zodiac} zodiac nature.` : ""} Cover love, business, and health. Close with their one-sentence life theme.`,
     };
     const sys = `You are Palmara, a world-class palm reader and intuitive life coach. Analyze the palm photo with depth and wisdom. Be specific, personal, and actionable. Use **bold** for section headers. Keep sections 3 to 5 sentences. Total under 450 words. Never be vague.`;
+    const isSecondHand = !!firstHandReading;
+    const otherHand = handType === "right" ? "left" : "right";
+    const userText = isSecondHand
+      ? `I already read the ${otherHand} hand:\n${firstHandReading}\n\nNow analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}\n\nCombine insights from both hands into a unified, deeper reading.`
+      : `Analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}`;
     try {
       const text = await callClaude([{ role:"user", content:[
-        { type:"image", source:{ type:"base64", media_type:"image/jpeg", data:imageB64 } },
-        { type:"text", text:`Analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}` }
+        { type:"image", source:{ type:"base64", media_type: imageMediaType, data:imageB64 } },
+        { type:"text", text: userText }
       ]}], sys);
       setReading(text);
       if (!freeUsed) setFreeUsed(true);
@@ -267,6 +275,15 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
     setStep("home"); setCategory(null); setZodiac(""); setHandType("right");
     setSelectedPersonas([]); setImageUrl(null); setImageB64(null);
     setReading(""); setSuggestions(null); setActivePillar(null); setExportDone(false);
+    setFirstHandReading("");
+  };
+
+  const goToSecondHand = () => {
+    setFirstHandReading(reading);
+    setHandType(handType === "right" ? "left" : "right");
+    setImageUrl(null); setImageB64(null);
+    setReading(""); setSuggestions(null); setActivePillar(null);
+    setStep("upload");
   };
 
   const formatText = (text, accentColor) => text?.split("\n").map((line, i) => {
@@ -402,8 +419,12 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
             <button onClick={() => setStep("persona")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:14, marginBottom:22, display:"flex", alignItems:"center", gap:6 }}>← Back</button>
             <div style={{ textAlign:"center", marginBottom:22 }}>
               <div style={{ fontSize:28, color:cat.color, marginBottom:6 }}>{cat.icon}</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, color:"#fff", marginBottom:5 }}>{cat.title}</h2>
-              <p style={{ color:"rgba(255,255,255,0.3)", fontSize:14 }}>Upload a clear palm photo, good lighting, fingers relaxed</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, color:"#fff", marginBottom:5 }}>
+                {firstHandReading ? `Now Your ${handType.charAt(0).toUpperCase()+handType.slice(1)} Hand` : cat.title}
+              </h2>
+              <p style={{ color:"rgba(255,255,255,0.3)", fontSize:14 }}>
+                {firstHandReading ? "Upload your other palm for a combined deep reading" : "Upload a clear palm photo, good lighting, fingers relaxed"}
+              </p>
               {selectedPersonas.length > 0 && (
                 <p style={{ color:"rgba(255,255,255,0.25)", fontSize:13, marginTop:6 }}>
                   Channeling {selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" & ")}
@@ -478,6 +499,12 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
               </div>
               <div>{formatText(reading, cat?.color)}</div>
             </div>
+
+            {!firstHandReading && (
+              <button className="btn-h" onClick={goToSecondHand} style={{ width:"100%", padding:16, borderRadius:14, background:"linear-gradient(135deg,rgba(201,168,76,0.12),rgba(155,127,232,0.12))", border:"1px solid rgba(201,168,76,0.35)", color:"#c9a84c", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:17, letterSpacing:1, marginBottom:20, textAlign:"center" }}>
+                ✦ Add {handType === "right" ? "Left" : "Right"} Hand for a Deeper Reading →
+              </button>
+            )}
 
             <div style={{ marginBottom:20 }}>
               <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:"#fff", marginBottom:4, textAlign:"center" }}>Your Growth Plan</h3>
