@@ -247,7 +247,7 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
       ]}], sys);
       setReading(text);
       if (!freeUsed) setFreeUsed(true);
-    } catch { setReading("Unable to read palm. Please try a clearer photo in good lighting."); }
+    } catch (err) { setReading(`Error: ${err.message}`); }
     setLoadingReading(false); setStep("result");
   };
 
