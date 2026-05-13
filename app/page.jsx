@@ -210,13 +210,16 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
   };
 
   const callClaude = async (messages, system) => {
-    const res = await fetch("/api/claude", {
+    const res = await fetch("/api/reading", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model:"claude-sonnet-4-5-20251001", max_tokens:1000, system, messages }),
+      body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000, system, messages }),
     });
     const data = await res.json();
-    return data.content?.map(b => b.text || "").join("") || "";
+    if (data.error) throw new Error(data.error.message || "API error");
+    const text = data.content?.map(b => b.text || "").join("") || "";
+    if (!text) throw new Error("Empty response from API");
+    return text;
   };
 
   const getReading = async () => {
