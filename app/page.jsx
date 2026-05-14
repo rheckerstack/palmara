@@ -1,39 +1,68 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft, ChevronRight, Download, Check, FileDown,
+  Hand, Sparkles, RotateCcw, ScanLine, Upload, Crown,
+  Heart, Zap, Flame, Leaf, Gem, Microscope,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const CATEGORIES = [
-  { id: "love", icon: "♥", title: "Love & Relationships", subtitle: "Heart line · Venus mount · Attachment lines", color: "#e8636a", glow: "rgba(232,99,106,0.25)" },
-  { id: "business", icon: "◆", title: "Business & Wealth", subtitle: "Fate line · Mercury line · Jupiter mount", color: "#c9a84c", glow: "rgba(201,168,76,0.25)" },
-  { id: "health", icon: "✦", title: "Health & Vitality", subtitle: "Life line · Health line · Mount fullness", color: "#5ba89e", glow: "rgba(91,168,158,0.25)" },
-  { id: "full", icon: "⬡", title: "Full Soul Reading", subtitle: "Complete palm + zodiac + all dimensions", color: "#9b7fe8", glow: "rgba(155,127,232,0.25)" },
+  { id: "love",     icon: "♥", title: "Love & Relationships", subtitle: "Heart line · Venus mount · Attachment lines", color: "#e8636a", glow: "rgba(232,99,106,0.25)" },
+  { id: "business", icon: "◆", title: "Business & Wealth",    subtitle: "Fate line · Mercury line · Jupiter mount",    color: "#c9a84c", glow: "rgba(201,168,76,0.25)"  },
+  { id: "health",   icon: "✦", title: "Health & Vitality",    subtitle: "Life line · Health line · Mount fullness",    color: "#5ba89e", glow: "rgba(91,168,158,0.25)"  },
+  { id: "full",     icon: "⬡", title: "Full Soul Reading",    subtitle: "Complete palm + zodiac + all dimensions",     color: "#9b7fe8", glow: "rgba(155,127,232,0.25)" },
 ];
 
 const PERSONAS = [
-  { id: "kobe", name: "Kobe Bryant", emoji: "🐍", trait: "Mamba Mentality", color: "#c9a84c", quote: "Rest at the end, not in the middle." },
-  { id: "jobs", name: "Steve Jobs", emoji: "🍎", trait: "Think Different", color: "#e8e8e8", quote: "The people who are crazy enough to think they can change the world are the ones who do." },
-  { id: "tyson", name: "Mike Tyson", emoji: "🥊", trait: "Undeniable Force", color: "#e8636a", quote: "Everyone has a plan until they get punched in the mouth." },
-  { id: "oprah", name: "Oprah Winfrey", emoji: "✨", trait: "Turn Pain Into Power", color: "#d4a0e8", quote: "You get in life what you have the courage to ask for." },
-  { id: "ronaldo", name: "Cristiano Ronaldo", emoji: "⚽", trait: "Obsessive Excellence", color: "#4a9eda", quote: "Talent without working hard is nothing." },
-  { id: "jordan", name: "Michael Jordan", emoji: "🏀", trait: "No Excuses", color: "#e07840", quote: "I never lost a game. I just ran out of time." },
-  { id: "musk", name: "Elon Musk", emoji: "🚀", trait: "First Principles", color: "#5ba89e", quote: "When something is important enough, you do it even if the odds are not in your favor." },
-  { id: "martha", name: "Martha Stewart", emoji: "🌿", trait: "Master Your Craft", color: "#a8c870", quote: "Life is too complicated not to be orderly." },
-  { id: "tony", name: "Tony Robbins", emoji: "🔥", trait: "Unleash the Giant", color: "#ff8c42", quote: "The only impossible journey is the one you never begin." },
+  { id: "kobe",    name: "Kobe Bryant",        emoji: "🐍", trait: "Mamba Mentality",       color: "#c9a84c", quote: "Rest at the end, not in the middle." },
+  { id: "jobs",    name: "Steve Jobs",          emoji: "🍎", trait: "Think Different",        color: "#e8e8e8", quote: "The people who are crazy enough to think they can change the world are the ones who do." },
+  { id: "tyson",   name: "Mike Tyson",          emoji: "🥊", trait: "Undeniable Force",       color: "#e8636a", quote: "Everyone has a plan until they get punched in the mouth." },
+  { id: "oprah",   name: "Oprah Winfrey",       emoji: "✨", trait: "Turn Pain Into Power",   color: "#d4a0e8", quote: "You get in life what you have the courage to ask for." },
+  { id: "ronaldo", name: "Cristiano Ronaldo",   emoji: "⚽", trait: "Obsessive Excellence",   color: "#4a9eda", quote: "Talent without working hard is nothing." },
+  { id: "jordan",  name: "Michael Jordan",      emoji: "🏀", trait: "No Excuses",             color: "#e07840", quote: "I never lost a game. I just ran out of time." },
+  { id: "musk",    name: "Elon Musk",           emoji: "🚀", trait: "First Principles",       color: "#5ba89e", quote: "When something is important enough, you do it even if the odds are not in your favor." },
+  { id: "martha",  name: "Martha Stewart",      emoji: "🌿", trait: "Master Your Craft",      color: "#a8c870", quote: "Life is too complicated not to be orderly." },
+  { id: "tony",    name: "Tony Robbins",        emoji: "🔥", trait: "Unleash the Giant",      color: "#ff8c42", quote: "The only impossible journey is the one you never begin." },
 ];
 
 const IMPROVEMENT_PILLARS = [
-  { id: "emotional", icon: "❤", label: "Emotional Intelligence", color: "#e8636a" },
-  { id: "logic", icon: "⚡", label: "Logic & Mindset", color: "#c9a84c" },
-  { id: "willpower", icon: "🔥", label: "Will & Discipline", color: "#e07840" },
-  { id: "nutrition", icon: "🌿", label: "Eating & Nutrition", color: "#5ba89e" },
-  { id: "health_habits", icon: "💎", label: "Health Habits", color: "#9b7fe8" },
-  { id: "science", icon: "🧬", label: "Science-Based Tips", color: "#4a9eda" },
+  { id: "emotional",     Icon: Heart,       label: "Emotional Intelligence", color: "#e8636a", emoji: "❤"  },
+  { id: "logic",         Icon: Zap,         label: "Logic & Mindset",        color: "#c9a84c", emoji: "⚡" },
+  { id: "willpower",     Icon: Flame,       label: "Will & Discipline",      color: "#e07840", emoji: "🔥" },
+  { id: "nutrition",     Icon: Leaf,        label: "Eating & Nutrition",     color: "#5ba89e", emoji: "🌿" },
+  { id: "health_habits", Icon: Gem,         label: "Health Habits",          color: "#9b7fe8", emoji: "💎" },
+  { id: "science",       Icon: Microscope,  label: "Science-Based Tips",     color: "#4a9eda", emoji: "🧬" },
 ];
 
 const ZODIAC_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const PREMIUM_CATEGORIES = ["health", "full"];
 
+// ── animation presets ──────────────────────────────────────────────────────────
+const ease = [0.22, 1, 0.36, 1];
+
+const pageVariants = {
+  initial: { opacity: 0, y: 22, filter: "blur(6px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.42, ease } },
+  exit:    { opacity: 0, y: -14, filter: "blur(3px)", transition: { duration: 0.26, ease: [0.4, 0, 1, 1] } },
+};
+const cardItem = {
+  hidden:  { opacity: 0, y: 18, scale: 0.97 },
+  visible: { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.36, ease } },
+};
+const staggerList = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+};
+
+// ── generatePDF ────────────────────────────────────────────────────────────────
 function generatePDF(reading, suggestions, personas, category, handType, zodiac, userName) {
-  const cat = CATEGORIES.find(c => c.id === category);
+  const cat  = CATEGORIES.find(c => c.id === category);
   const date = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const personaNames = personas.map(id => PERSONAS.find(p => p.id === id)?.name).filter(Boolean).join(" & ");
 
@@ -41,7 +70,7 @@ function generatePDF(reading, suggestions, personas, category, handType, zodiac,
     const content = suggestions[p.id];
     if (!content) return "";
     return `<div style="margin-bottom:22px;padding:18px 20px;background:#f9f7ff;border-left:4px solid ${p.color};border-radius:0 10px 10px 0;">
-      <div style="font-size:12px;font-weight:700;color:${p.color};letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">${p.icon} ${p.label}</div>
+      <div style="font-size:12px;font-weight:700;color:${p.color};letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">${p.emoji} ${p.label}</div>
       <div style="font-size:15px;color:#2d2d3a;line-height:1.85;">${content.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>")}</div>
     </div>`;
   }).join("") : "";
@@ -89,77 +118,384 @@ body{font-family:'Crimson Text',serif;background:#fff;color:#2d2d3a}
 </body></html>`;
 
   const blob = new Blob([html], { type:"text/html" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = `Palmara-${cat.title.replace(/\s+/g,"-")}-${date}.html`;
-  a.click(); URL.revokeObjectURL(url);
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = `Palmara-${cat.title.replace(/\s+/g,"-")}-${date}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
+// ── ParticleCanvas ─────────────────────────────────────────────────────────────
+function ParticleCanvas() {
+  const canvasRef = useRef(null);
+  const mouseRef  = useRef({ x: -9999, y: -9999 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width  = W;
+    canvas.height = H;
+
+    const COUNT      = 72;
+    const CONNECT    = 130;
+    const MOUSE_R    = 160;
+    const MOUSE_F    = 0.018;
+
+    const pts = Array.from({ length: COUNT }, () => ({
+      x:  Math.random() * W,
+      y:  Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      r:  0.7 + Math.random() * 1.4,
+      baseAlpha: 0.25 + Math.random() * 0.55,
+      phase: Math.random() * Math.PI * 2,
+      spd:  0.008 + Math.random() * 0.012,
+    }));
+
+    let tick = 0;
+    let raf;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      tick++;
+
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      for (const p of pts) {
+        // Mouse repulsion
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < MOUSE_R * MOUSE_R && d2 > 0) {
+          const d = Math.sqrt(d2);
+          const f = ((MOUSE_R - d) / MOUSE_R) * MOUSE_F;
+          p.vx += (dx / d) * f;
+          p.vy += (dy / d) * f;
+        }
+
+        p.vx *= 0.992;
+        p.vy *= 0.992;
+        p.x  += p.vx;
+        p.y  += p.vy;
+
+        // Wrap at edges
+        if (p.x < -10) p.x = W + 10;
+        if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10;
+        if (p.y > H + 10) p.y = -10;
+
+        const alpha = p.baseAlpha * (0.55 + 0.45 * Math.sin(tick * p.spd + p.phase));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201,168,76,${alpha})`;
+        ctx.fill();
+      }
+
+      // Constellation lines
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x;
+          const dy = pts[i].y - pts[j].y;
+          const d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < CONNECT) {
+            const a = (1 - d / CONNECT) * 0.14;
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(201,168,76,${a})`;
+            ctx.lineWidth   = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    const onResize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width  = W;
+      canvas.height = H;
+    };
+    const onMouse = (e) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    const onLeave = ()  => { mouseRef.current = { x: -9999,     y: -9999     }; };
+
+    window.addEventListener("resize",      onResize);
+    window.addEventListener("mousemove",   onMouse);
+    window.addEventListener("mouseleave",  onLeave);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize",     onResize);
+      window.removeEventListener("mousemove",  onMouse);
+      window.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+}
+
+// ── ProgressBar ────────────────────────────────────────────────────────────────
+const STEP_LABELS = ["Category", "Mentors", "Upload", "Reading"];
+const STEP_IDX    = { home: 0, persona: 1, upload: 2, loading: 3, result: 3 };
+
+function ProgressBar({ step }) {
+  const active = STEP_IDX[step] ?? 0;
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 pt-2.5 pb-1 px-5"
+      style={{ background: "linear-gradient(to bottom, rgba(9,7,15,0.95) 60%, transparent)" }}>
+      <div className="max-w-[520px] mx-auto flex gap-2">
+        {STEP_LABELS.map((label, i) => {
+          const done    = i <= active;
+          const current = i === active;
+          return (
+            <div key={label} className="flex-1 flex flex-col items-center gap-[5px]">
+              <div className="w-full h-[2px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                <motion.div
+                  className="h-full rounded-full origin-left"
+                  style={{ background: "linear-gradient(90deg,#c9a84c,#9b7fe8)" }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: done ? 1 : 0 }}
+                  transition={{ duration: 0.55, ease, delay: i * 0.06 }}
+                />
+              </div>
+              <span className="text-[8.5px] tracking-[1.5px] uppercase transition-colors duration-300"
+                style={{ color: current ? "rgba(201,168,76,0.85)" : done ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.12)" }}>
+                {label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Loader ─────────────────────────────────────────────────────────────────────
 function Loader({ label }) {
   return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:20, padding:"52px 0" }}>
-      <div style={{ position:"relative", width:68, height:68 }}>
-        {[0,1,2].map(i => (
-          <div key={i} style={{ position:"absolute", inset:0, borderRadius:"50%", border:"1.5px solid rgba(201,168,76,0.45)", animation:`ring 2s ease-out ${i*0.5}s infinite` }}/>
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="flex flex-col items-center gap-7 py-20"
+    >
+      <div className="relative w-20 h-20">
+        {[0, 1, 2].map(i => (
+          <motion.div key={i}
+            className="absolute inset-0 rounded-full border border-[rgba(201,168,76,0.38)]"
+            animate={{ scale: [0.55, 2.7], opacity: [0.85, 0] }}
+            transition={{ duration: 2.2, ease: "easeOut", delay: i * 0.55, repeat: Infinity }}
+          />
         ))}
-        <div style={{ position:"absolute", inset:"28%", borderRadius:"50%", background:"radial-gradient(circle,#c9a84c,#9b7fe8)", animation:"glow 2s ease-in-out infinite" }}/>
+        <motion.div
+          className="absolute rounded-full"
+          style={{ inset: "26%", background: "radial-gradient(circle, #c9a84c, #9b7fe8)" }}
+          animate={{ opacity: [0.5, 1, 0.5], scale: [0.88, 1.12, 0.88] }}
+          transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+        />
       </div>
-      <p style={{ color:"rgba(255,255,255,0.4)", fontFamily:"'Cormorant Garamond',serif", fontSize:17, letterSpacing:2 }}>{label}</p>
-      <style>{`@keyframes ring{0%{transform:scale(.7);opacity:1}100%{transform:scale(2.4);opacity:0}}@keyframes glow{0%,100%{opacity:.6}50%{opacity:1}}`}</style>
-    </div>
+      <motion.p
+        animate={{ opacity: [0.3, 0.75, 0.3] }}
+        transition={{ duration: 2.6, repeat: Infinity }}
+        className="font-garamond text-lg tracking-[3px] text-white/40"
+      >{label}</motion.p>
+    </motion.div>
   );
 }
 
-function Paywall({ cat, onClose }) {
+// ── ScanningLoader ─────────────────────────────────────────────────────────────
+function ScanningLoader({ imageUrl }) {
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.92)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:24 }}>
-      <div style={{ background:"linear-gradient(145deg,#1a1520,#100d18)", border:`1px solid ${cat.color}40`, borderRadius:24, padding:40, maxWidth:400, width:"100%", textAlign:"center", boxShadow:`0 0 80px ${cat.glow}` }}>
-        <div style={{ fontSize:42, marginBottom:12 }}>{cat.icon}</div>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:cat.color, marginBottom:10 }}>Unlock {cat.title}</h2>
-        <p style={{ color:"rgba(255,255,255,0.45)", fontSize:15, lineHeight:1.7, marginBottom:28 }}>You have used your free reading. Join Palmara Pro for unlimited access to all readings, growth plans, and PDF exports.</p>
-        <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:14, padding:20, marginBottom:24 }}>
-          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:11, letterSpacing:2, marginBottom:8 }}>PALMARA PRO</div>
-          <div style={{ color:"#fff", fontSize:38, fontFamily:"'Cormorant Garamond',serif", fontWeight:700 }}>$9.99<span style={{ fontSize:16, color:"rgba(255,255,255,0.35)" }}>/mo</span></div>
-          <div style={{ color:"rgba(255,255,255,0.35)", fontSize:13, marginTop:5 }}>Unlimited · All categories · PDF export · Persona coaching</div>
-        </div>
-        <button style={{ width:"100%", padding:15, borderRadius:12, background:`linear-gradient(135deg,${cat.color},${cat.color}88)`, border:"none", color:"#fff", fontSize:17, fontFamily:"'Cormorant Garamond',serif", letterSpacing:1, cursor:"pointer", marginBottom:10 }}>Start Palmara Pro →</button>
-        <button onClick={onClose} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.2)", fontSize:13, cursor:"pointer" }}>Maybe later</button>
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="flex flex-col items-center gap-8 py-10"
+    >
+      <div className="relative w-full max-w-[300px] rounded-2xl overflow-hidden"
+        style={{ height: 230, boxShadow: "0 0 48px rgba(201,168,76,0.18), 0 0 0 1px rgba(201,168,76,0.15)" }}>
+        <Image src={imageUrl} alt="Palm" fill unoptimized className="object-cover" sizes="300px" />
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom,rgba(9,7,15,0.15),rgba(9,7,15,0.5))" }} />
+
+        {/* Analysis grid */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: "linear-gradient(rgba(201,168,76,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.05) 1px,transparent 1px)",
+          backgroundSize: "24px 24px",
+        }} />
+
+        {/* Scan line */}
+        <motion.div
+          className="absolute left-0 right-0 h-[2px]"
+          style={{ background: "linear-gradient(90deg,transparent 0%,rgba(201,168,76,0.2) 10%,rgba(201,168,76,0.9) 50%,rgba(201,168,76,0.2) 90%,transparent 100%)", boxShadow: "0 0 14px 4px rgba(201,168,76,0.45)" }}
+          animate={{ top: ["0%", "100%", "0%"] }}
+          transition={{ duration: 2.6, ease: "easeInOut", repeat: Infinity }}
+        />
+
+        {/* Corner markers */}
+        {["top-2 left-2","top-2 right-2","bottom-2 left-2","bottom-2 right-2"].map((pos, i) => (
+          <motion.div key={i} className={`absolute ${pos} w-4 h-4`}
+            style={{
+              borderTop:    i < 2 ? "1.5px solid rgba(201,168,76,0.7)" : "none",
+              borderBottom: i >= 2 ? "1.5px solid rgba(201,168,76,0.7)" : "none",
+              borderLeft:   i % 2 === 0 ? "1.5px solid rgba(201,168,76,0.7)" : "none",
+              borderRight:  i % 2 === 1 ? "1.5px solid rgba(201,168,76,0.7)" : "none",
+            }}
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.8, delay: i * 0.2, repeat: Infinity }}
+          />
+        ))}
       </div>
-    </div>
+
+      <div className="flex flex-col items-center gap-2">
+        <motion.p
+          animate={{ opacity: [0.35, 0.85, 0.35] }}
+          transition={{ duration: 2.4, repeat: Infinity }}
+          className="font-garamond text-lg tracking-[3px] text-white/50"
+        >Reading your palm lines...</motion.p>
+        <div className="flex gap-1.5">
+          {[0, 1, 2, 3].map(i => (
+            <motion.div key={i} className="w-1 h-1 rounded-full"
+              style={{ background: "#c9a84c" }}
+              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
+              transition={{ duration: 1.4, delay: i * 0.18, repeat: Infinity }}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
+// ── Paywall ────────────────────────────────────────────────────────────────────
+function Paywall({ cat, onClose }) {
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+
+  const handleCheckout = async () => {
+    setLoading(true); setErr("");
+    try {
+      const res  = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; }
+      else { setErr(data.error || "Something went wrong. Please try again."); setLoading(false); }
+    } catch { setErr("Payment unavailable. Please try again."); setLoading(false); }
+  };
+
+  return (
+    <Dialog open onOpenChange={v => !v && onClose()}>
+      <DialogContent accentColor={cat.color} glow={cat.glow}>
+        <DialogHeader>
+          <motion.div
+            animate={{ rotate:[0,8,-8,0], scale:[1,1.1,1] }}
+            transition={{ duration:3.5, repeat:Infinity, ease:"easeInOut" }}
+            className="text-5xl mb-1"
+          >{cat.icon}</motion.div>
+          <DialogTitle className="text-3xl" style={{ color: cat.color }}>Unlock {cat.title}</DialogTitle>
+          <DialogDescription className="text-[15px] leading-relaxed">
+            You have used your free reading. Join Palmara Pro for unlimited access to all readings, growth plans, and PDF exports.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded-2xl bg-white/[0.04] border border-white/[0.06] p-5 mb-6">
+          <Badge variant="pro" className="mb-3">PALMARA PRO</Badge>
+          <div className="font-garamond text-[40px] font-bold leading-none text-white">
+            $9.99<span className="text-base font-normal text-white/35">/mo</span>
+          </div>
+          <p className="text-[13px] text-white/30 mt-2">Unlimited · All categories · PDF export · Persona coaching</p>
+        </div>
+
+        {err && <p className="text-[13px] text-[#e8636a] mb-3 text-center">{err}</p>}
+
+        <Button size="lg" className="w-full mb-3 gap-2" disabled={loading} onClick={handleCheckout}
+          style={{ background:`linear-gradient(135deg,${cat.color},${cat.color}88)`, color:"#fff", boxShadow:`0 6px 28px ${cat.glow}` }}
+        >
+          {loading && (
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+          )}
+          {loading ? "Redirecting to Stripe…" : "Start Palmara Pro — $9.99/mo →"}
+        </Button>
+
+        <button onClick={onClose} className="text-[13px] text-white/20 cursor-pointer bg-transparent border-0 hover:text-white/40 transition-colors">
+          Maybe later
+        </button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── PalmaraLogo ────────────────────────────────────────────────────────────────
 function PalmaraLogo() {
   return (
-    <div style={{ position:"relative", display:"inline-block" }}>
-      <style>{`
-        @keyframes logoShimmer{0%{background-position:-300% center}100%{background-position:300% center}}
-        @keyframes letterFloat0{0%,100%{transform:translateY(0px) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
-        @keyframes letterFloat1{0%,100%{transform:translateY(-3px) rotate(1deg)}50%{transform:translateY(3px) rotate(-1deg)}}
-        @keyframes letterFloat2{0%,100%{transform:translateY(0px)}50%{transform:translateY(-8px)}}
-        @keyframes letterFloat3{0%,100%{transform:translateY(-2px) rotate(-1deg)}50%{transform:translateY(4px) rotate(2deg)}}
-        @keyframes letterFloat4{0%,100%{transform:translateY(0px) rotate(1deg)}50%{transform:translateY(-5px) rotate(-1deg)}}
-        @keyframes letterFloat5{0%,100%{transform:translateY(-4px)}50%{transform:translateY(2px)}}
-        @keyframes letterFloat6{0%,100%{transform:translateY(0px) rotate(-2deg)}50%{transform:translateY(-7px) rotate(1deg)}}
-        @keyframes orbPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.3)}}
-        .logo-letter{display:inline-block;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:54px;letter-spacing:3px;line-height:1}
-      `}</style>
-      {"PALMARA".split("").map((letter, i) => (
-        <span key={i} className="logo-letter" style={{
-          background:`linear-gradient(135deg, #b08020 ${i*12}%, #e8d5a3 ${i*12+20}%, #c9a84c ${i*12+40}%, #9b7fe8 ${i*12+60}%, #c9a84c)`,
-          backgroundSize:"300% auto",
-          WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
-          animation:`letterFloat${i % 7} ${2.5 + i * 0.3}s ease-in-out ${i * 0.12}s infinite, logoShimmer 4s linear ${i*0.1}s infinite`,
-          textShadow:"none",
-          filter:`drop-shadow(0 0 ${6 + i}px rgba(201,168,76,${0.2 + i*0.03}))`,
-        }}>
-          {letter}
-        </span>
-      ))}
-    </div>
+    <>
+      <style>{`@keyframes shimmer{0%{background-position:-300% center}100%{background-position:300% center}}`}</style>
+      <motion.div
+        className="relative inline-block"
+        animate={{
+          filter: [
+            "drop-shadow(0 0 18px rgba(201,168,76,0.4))",
+            "drop-shadow(0 0 52px rgba(201,168,76,0.95)) drop-shadow(0 0 90px rgba(155,127,232,0.35))",
+            "drop-shadow(0 0 18px rgba(201,168,76,0.4))",
+          ]
+        }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {"PALMARA".split("").map((letter, i) => (
+          <motion.span key={i}
+            className="inline-block font-garamond font-bold leading-none"
+            style={{
+              fontSize: 62,
+              letterSpacing: 5,
+              background: "linear-gradient(135deg,#8a6010 0%,#f0d98a 20%,#c9a84c 40%,#e8d5a3 55%,#9b7fe8 75%,#c9a84c 100%)",
+              backgroundSize: "400% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              animation: `shimmer ${4 + i * 0.15}s ${i * 0.1}s linear infinite`,
+            }}
+            animate={{ y: [0, -(3 + (i % 3) * 2.5), 0] }}
+            transition={{ duration: 2.8 + i * 0.22, ease: "easeInOut", delay: i * 0.08, repeat: Infinity }}
+          >{letter}</motion.span>
+        ))}
+      </motion.div>
+    </>
   );
 }
 
+// ── ResultUpsellButton ─────────────────────────────────────────────────────────
+function ResultUpsellButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res  = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {}
+    setLoading(false);
+  };
+
+  return (
+    <Button size="lg" disabled={loading} onClick={handleCheckout} className="gap-2"
+      style={{ background:"linear-gradient(135deg,#9b7fe8,#c9a84c)", color:"#fff" }}>
+      {loading && (
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+      )}
+      {loading ? "Opening Stripe…" : "Start for $9.99 per month →"}
+    </Button>
+  );
+}
+
+// ── PalmaraApp ─────────────────────────────────────────────────────────────────
 export default function PalmaraApp() {
   const [step, setStep] = useState("home");
   const [category, setCategory] = useState(null);
@@ -174,12 +510,22 @@ export default function PalmaraApp() {
   const [loadingReading, setLoadingReading] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [freeUsed, setFreeUsed] = useState(false);
+  const [isPro, setIsPro] = useState(false);
   const [paywall, setPaywall] = useState(null);
   const [activePillar, setActivePillar] = useState(null);
-  const [exportDone, setExportDone] = useState(false);
+  const [flippedPillar, setFlippedPillar] = useState(null);
+  const [pdfState, setPdfState] = useState("idle"); // "idle" | "saving" | "done"
   const [firstHandReading, setFirstHandReading] = useState("");
   const [imageMediaType, setImageMediaType] = useState("image/jpeg");
   const fileRef = useRef();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("pro") === "true") {
+      setIsPro(true); setFreeUsed(false);
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
 
   const handleFile = useCallback((file) => {
     setImageUrl(URL.createObjectURL(file));
@@ -198,7 +544,7 @@ export default function PalmaraApp() {
   };
 
   const selectCategory = (cat) => {
-    if (freeUsed && PREMIUM_CATEGORIES.includes(cat.id)) { setPaywall(cat); return; }
+    if (!isPro && freeUsed && PREMIUM_CATEGORIES.includes(cat.id)) { setPaywall(cat); return; }
     setCategory(cat); setStep("persona");
   };
 
@@ -229,15 +575,15 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
     if (!imageB64) return;
     setLoadingReading(true); setStep("loading");
     const catPrompts = {
-      love: "Focus on love and relationships. Analyze heart line depth, curve, length. Look at Venus mount fullness. Identify attachment/relationship lines. Give romantic profile, what they need in love, relationship patterns, and 3 specific insights.",
+      love:     "Focus on love and relationships. Analyze heart line depth, curve, length. Look at Venus mount fullness. Identify attachment/relationship lines. Give romantic profile, what they need in love, relationship patterns, and 3 specific insights.",
       business: "Focus on business and wealth. Analyze fate line strength, Mercury line, Jupiter mount. Give career archetype, money mindset, leadership style, best business environment, and 3 wealth-building insights.",
-      health: "Focus on health and vitality. Analyze life line arc, depth, breaks. Look for health line and mount fullness. Give energy profile, stress indicators, physical strengths and vulnerabilities, and 3 actionable health insights.",
-      full: `Give a complete reading covering heart line, head line, life line, fate line, and key mounts. ${zodiac ? `Weave in their ${zodiac} zodiac nature.` : ""} Cover love, business, and health. Close with their one-sentence life theme.`,
+      health:   "Focus on health and vitality. Analyze life line arc, depth, breaks. Look for health line and mount fullness. Give energy profile, stress indicators, physical strengths and vulnerabilities, and 3 actionable health insights.",
+      full:     `Give a complete reading covering heart line, head line, life line, fate line, and key mounts. ${zodiac ? `Weave in their ${zodiac} zodiac nature.` : ""} Cover love, business, and health. Close with their one-sentence life theme.`,
     };
     const sys = `You are Palmara, a world-class palm reader and intuitive life coach. Analyze the palm photo with depth and wisdom. Be specific, personal, and actionable. Use **bold** for section headers. Keep sections 3 to 5 sentences. Total under 450 words. Never be vague.`;
     const isSecondHand = !!firstHandReading;
-    const otherHand = handType === "right" ? "left" : "right";
-    const userText = isSecondHand
+    const otherHand    = handType === "right" ? "left" : "right";
+    const userText     = isSecondHand
       ? `I already read the ${otherHand} hand:\n${firstHandReading}\n\nNow analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}\n\nCombine insights from both hands into a unified, deeper reading.`
       : `Analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}`;
     try {
@@ -254,9 +600,9 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
   const getSuggestions = async (pillarId) => {
     if (suggestions?.[pillarId]) { setActivePillar(pillarId); return; }
     setActivePillar(pillarId); setLoadingSuggestions(true);
-    const pillar = IMPROVEMENT_PILLARS.find(p => p.id === pillarId);
+    const pillar     = IMPROVEMENT_PILLARS.find(p => p.id === pillarId);
     const personaCtx = buildPersonaContext();
-    const sys = `You are Palmara's life optimization coach. Give hyper-specific, science-backed, deeply actionable improvement advice. Use **bold** for key points. Give 4 to 6 real steps people can act on today. No fluff, no filler. ${personaCtx ? "When personas are provided, speak in their actual voice and philosophy. Use their real language and famous phrases naturally throughout." : ""}`;
+    const sys    = `You are Palmara's life optimization coach. Give hyper-specific, science-backed, deeply actionable improvement advice. Use **bold** for key points. Give 4 to 6 real steps people can act on today. No fluff, no filler. ${personaCtx ? "When personas are provided, speak in their actual voice and philosophy. Use their real language and famous phrases naturally throughout." : ""}`;
     const prompt = `Palm reading result:\n${reading}\n\nCategory: ${category?.title}\nHand: ${handType}${zodiac ? `\nZodiac: ${zodiac}` : ""}\n${personaCtx}\n\nNow give specific improvement advice for this area: ${pillar.label}\n\nBase it on what the palm reading reveals about this specific person. Make it feel deeply personal. ${selectedPersonas.length ? `Channel the voice and philosophy of ${selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" and ")}.` : ""}`;
     try {
       const text = await callClaude([{ role:"user", content: prompt }], sys);
@@ -265,17 +611,27 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
     setLoadingSuggestions(false);
   };
 
+  const handlePillarClick = (id) => {
+    setFlippedPillar(id);
+    getSuggestions(id);
+    setTimeout(() => setFlippedPillar(null), 650);
+  };
+
   const handleExport = () => {
-    generatePDF(reading, suggestions, selectedPersonas, category?.id, handType, zodiac, userName);
-    setExportDone(true);
-    setTimeout(() => setExportDone(false), 3000);
+    if (pdfState !== "idle") return;
+    setPdfState("saving");
+    setTimeout(() => {
+      generatePDF(reading, suggestions, selectedPersonas, category?.id, handType, zodiac, userName);
+      setPdfState("done");
+      setTimeout(() => setPdfState("idle"), 3000);
+    }, 900);
   };
 
   const reset = () => {
     setStep("home"); setCategory(null); setZodiac(""); setHandType("right");
     setSelectedPersonas([]); setImageUrl(null); setImageB64(null);
-    setReading(""); setSuggestions(null); setActivePillar(null); setExportDone(false);
-    setFirstHandReading("");
+    setReading(""); setSuggestions(null); setActivePillar(null); setFlippedPillar(null);
+    setPdfState("idle"); setFirstHandReading("");
   };
 
   const goToSecondHand = () => {
@@ -286,275 +642,673 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
     setStep("upload");
   };
 
-  const formatText = (text, accentColor) => text?.split("\n").map((line, i) => {
-    if (!line.trim()) return <br key={i}/>;
-    if (line.startsWith("**") && line.endsWith("**"))
-      return <h3 key={i} style={{ color: accentColor||"#c9a84c", fontFamily:"'Cormorant Garamond',serif", fontSize:20, margin:"20px 0 6px", letterSpacing:.5 }}>{line.replace(/\*\*/g,"")}</h3>;
-    const parts = line.split(/\*\*(.*?)\*\*/g);
-    return <p key={i} style={{ color:"rgba(255,255,255,0.82)", lineHeight:1.88, marginBottom:7, fontSize:16 }}>
-      {parts.map((p,j) => j%2===1 ? <strong key={j} style={{ color: accentColor||"#c9a84c" }}>{p}</strong> : p)}
-    </p>;
-  });
+  const formatText = (text, accentColor) => {
+    if (!text) return null;
+    return (
+      <motion.div variants={staggerList} initial="hidden" animate="visible">
+        {text.split("\n").map((line, i) => {
+          if (!line.trim()) return <div key={i} className="h-2" />;
+          if (line.startsWith("**") && line.endsWith("**"))
+            return (
+              <motion.h3 key={i} variants={cardItem}
+                className="font-garamond text-xl mt-5 mb-1.5 tracking-wide"
+                style={{ color: accentColor || "#c9a84c" }}>
+                {line.replace(/\*\*/g, "")}
+              </motion.h3>
+            );
+          const parts = line.split(/\*\*(.*?)\*\*/g);
+          return (
+            <motion.p key={i} variants={cardItem} className="text-white/[0.82] leading-[1.88] mb-2 text-base">
+              {parts.map((p, j) => j % 2 === 1 ? <strong key={j} style={{ color: accentColor || "#c9a84c" }}>{p}</strong> : p)}
+            </motion.p>
+          );
+        })}
+      </motion.div>
+    );
+  };
 
   const cat = category;
 
   return (
-    <div style={{ minHeight:"100vh", background:"#09070f", fontFamily:"'Crimson Text',serif", position:"relative", overflowX:"hidden" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}
-        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#2a1f45;border-radius:2px}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-        @keyframes orb1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.1)}}
-        @keyframes orb2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,30px) scale(.9)}}
-        @keyframes orb3{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,20px)}}
-        @keyframes personaPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 20px 4px rgba(201,168,76,0.15)}}
-        .card-hover{transition:all .25s ease}.card-hover:hover{transform:translateY(-3px)}
-        .btn-h{transition:all .2s ease}.btn-h:hover{transform:translateY(-2px);filter:brightness(1.1)}
-        .pillar-btn{transition:all .2s ease}.pillar-btn:hover{transform:scale(1.02)}
-        .persona-card{transition:all .22s ease;cursor:pointer}.persona-card:hover{transform:scale(1.03)}
-      `}</style>
+    <div className="min-h-screen bg-[#09070f] font-crimson relative overflow-x-hidden">
 
-      <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0 }}>
-        <div style={{ position:"absolute", top:"5%", left:"5%", width:420, height:420, borderRadius:"50%", background:"radial-gradient(circle,rgba(155,127,232,0.07),transparent 65%)", animation:"orb1 12s ease-in-out infinite" }}/>
-        <div style={{ position:"absolute", bottom:"10%", right:"5%", width:360, height:360, borderRadius:"50%", background:"radial-gradient(circle,rgba(201,168,76,0.06),transparent 65%)", animation:"orb2 15s ease-in-out infinite" }}/>
-        <div style={{ position:"absolute", top:"45%", right:"20%", width:200, height:200, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,99,106,0.05),transparent 65%)", animation:"orb3 9s ease-in-out 3s infinite" }}/>
-        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(circle at 1px 1px, rgba(255,255,255,0.012) 1px, transparent 0)", backgroundSize:"30px 30px" }}/>
+      {/* Canvas particle background */}
+      <ParticleCanvas />
+
+      {/* Ambient orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <motion.div className="absolute top-[5%] left-[5%] w-[500px] h-[500px] rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(155,127,232,0.06),transparent 65%)" }}
+          animate={{ x:[0,35,0], y:[0,-45,0], scale:[1,1.12,1] }}
+          transition={{ duration:14, ease:"easeInOut", repeat:Infinity }} />
+        <motion.div className="absolute bottom-[8%] right-[5%] w-[420px] h-[420px] rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(201,168,76,0.05),transparent 65%)" }}
+          animate={{ x:[0,-25,0], y:[0,35,0], scale:[1,0.9,1] }}
+          transition={{ duration:17, ease:"easeInOut", repeat:Infinity }} />
+        <motion.div className="absolute top-[45%] right-[15%] w-[240px] h-[240px] rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(232,99,106,0.04),transparent 65%)" }}
+          animate={{ x:[0,22,0], y:[0,22,0] }}
+          transition={{ duration:10, ease:"easeInOut", delay:3, repeat:Infinity }} />
       </div>
 
-      <div style={{ position:"relative", zIndex:1, maxWidth:520, margin:"0 auto", padding:"0 20px 80px" }}>
+      {/* Progress bar */}
+      <ProgressBar step={step} />
 
-        {/* Header */}
-        <div style={{ textAlign:"center", padding:"48px 0 32px", animation:"fadeUp .7s ease" }}>
-          <div style={{ fontSize:36, marginBottom:12, filter:"drop-shadow(0 0 28px rgba(201,168,76,.7))" }}>🔮</div>
-          <PalmaraLogo/>
-          <p style={{ color:"rgba(255,255,255,0.25)", fontSize:11, letterSpacing:6, textTransform:"uppercase", marginTop:8 }}>Palm · Zodiac · Soul</p>
-          {!freeUsed && (
-            <div style={{ marginTop:18, display:"inline-flex", alignItems:"center", gap:8, background:"rgba(201,168,76,0.07)", border:"1px solid rgba(201,168,76,0.22)", borderRadius:24, padding:"7px 20px" }}>
-              <span style={{ color:"#c9a84c", fontSize:13 }}>✦ First reading free, no signup needed</span>
-            </div>
-          )}
-        </div>
+      <div className="relative z-[1] max-w-[520px] mx-auto px-5 pb-20 pt-12">
 
-        {/* HOME */}
-        {step === "home" && (
-          <div style={{ animation:"fadeUp .5s ease .1s both" }}>
-            <input placeholder="Your name (optional, appears on report)" value={userName} onChange={e => setUserName(e.target.value)}
-              style={{ width:"100%", padding:"13px 18px", borderRadius:12, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.7)", fontSize:15, fontFamily:"'Crimson Text',serif", marginBottom:24, outline:"none" }}/>
-            <p style={{ color:"rgba(255,255,255,0.3)", textAlign:"center", marginBottom:18, fontSize:16, fontStyle:"italic" }}>What would you like insight on?</p>
-            <div style={{ display:"flex", flexDirection:"column", gap:11 }}>
-              {CATEGORIES.map((c,i) => (
-                <div key={c.id} className="card-hover" onClick={() => selectCategory(c)} style={{
-                  background:"linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",
-                  border:`1px solid ${c.color}28`, borderRadius:18, padding:"17px 22px", cursor:"pointer",
-                  display:"flex", alignItems:"center", gap:15, animation:`fadeUp .5s ease ${.1*i+.2}s both`,
-                  boxShadow:`0 4px 24px ${c.glow}12`,
-                }}>
-                  <div style={{ width:48, height:48, borderRadius:12, flexShrink:0, background:`${c.color}11`, border:`1px solid ${c.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:19, color:c.color }}>{c.icon}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ color:"#fff", fontSize:18, fontFamily:"'Cormorant Garamond',serif", fontWeight:600, marginBottom:2 }}>{c.title}</div>
-                    <div style={{ color:"rgba(255,255,255,0.28)", fontSize:13 }}>{c.subtitle}</div>
-                  </div>
-                  {freeUsed && PREMIUM_CATEGORIES.includes(c.id) && <span style={{ color:c.color, fontSize:11, border:`1px solid ${c.color}33`, borderRadius:8, padding:"3px 9px", letterSpacing:1 }}>PRO</span>}
-                  <span style={{ color:"rgba(255,255,255,0.15)", fontSize:22 }}>›</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ── Header ── */}
+        <motion.div
+          initial={{ opacity:0, y:-20 }} animate={{ opacity:1, y:0 }}
+          transition={{ duration:0.6, ease }}
+          className="text-center pt-10 pb-8"
+        >
+          <motion.div
+            animate={{ scale:[1,1.12,1], filter:["drop-shadow(0 0 20px rgba(201,168,76,.5))","drop-shadow(0 0 44px rgba(201,168,76,1.0))","drop-shadow(0 0 20px rgba(201,168,76,.5))"] }}
+            transition={{ duration:3.2, repeat:Infinity, ease:"easeInOut" }}
+            className="text-4xl mb-4"
+          >🔮</motion.div>
 
-        {/* PERSONA SELECTION */}
-        {step === "persona" && cat && (
-          <div style={{ animation:"fadeUp .45s ease" }}>
-            <button onClick={() => setStep("home")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:14, marginBottom:22, display:"flex", alignItems:"center", gap:6 }}>← Back</button>
-            <div style={{ textAlign:"center", marginBottom:28 }}>
-              <div style={{ fontSize:28, color:cat.color, marginBottom:8 }}>{cat.icon}</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:"#fff", marginBottom:8 }}>Choose Your Mentors</h2>
-              <p style={{ color:"rgba(255,255,255,0.35)", fontSize:15 }}>Pick up to 2 people you admire. Your growth advice will be guided by their philosophy and voice.</p>
-              {selectedPersonas.length > 0 && (
-                <div style={{ marginTop:12, display:"flex", justifyContent:"center", gap:8, flexWrap:"wrap" }}>
-                  {selectedPersonas.map(id => {
-                    const p = PERSONAS.find(x => x.id === id);
-                    return <span key={id} style={{ background:`${p.color}20`, border:`1px solid ${p.color}50`, borderRadius:20, padding:"4px 14px", color:p.color, fontSize:13 }}>{p.emoji} {p.name}</span>;
-                  })}
-                </div>
-              )}
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
-              {PERSONAS.map(p => {
-                const selected = selectedPersonas.includes(p.id);
-                const disabled = !selected && selectedPersonas.length >= 2;
-                return (
-                  <div key={p.id} className="persona-card" onClick={() => !disabled && togglePersona(p.id)} style={{
-                    background: selected ? `${p.color}18` : "rgba(255,255,255,0.03)",
-                    border:`1px solid ${selected ? p.color+"55" : "rgba(255,255,255,0.07)"}`,
-                    borderRadius:14, padding:"14px 10px", textAlign:"center",
-                    opacity: disabled ? .35 : 1,
-                    boxShadow: selected ? `0 0 20px ${p.color}25` : "none",
-                    animation: selected ? "personaPulse 2s ease-in-out infinite" : "none",
-                  }}>
-                    <div style={{ fontSize:26, marginBottom:5 }}>{p.emoji}</div>
-                    <div style={{ color: selected ? p.color : "rgba(255,255,255,0.6)", fontSize:13, fontFamily:"'Cormorant Garamond',serif", fontWeight:600, lineHeight:1.2, marginBottom:3 }}>{p.name}</div>
-                    <div style={{ color: selected ? p.color+"aa" : "rgba(255,255,255,0.25)", fontSize:11, lineHeight:1.3 }}>{p.trait}</div>
-                    {selected && <div style={{ marginTop:5, color:p.color, fontSize:14 }}>✓</div>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ display:"flex", gap:10 }}>
-              <button className="btn-h" onClick={() => { setSelectedPersonas([]); setStep("upload"); }} style={{ flex:1, padding:"13px", borderRadius:12, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.4)", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:16 }}>
-                Skip
-              </button>
-              <button className="btn-h" onClick={() => setStep("upload")} style={{ flex:2, padding:"13px", borderRadius:12, background:`linear-gradient(135deg,${cat.color},${cat.color}88)`, border:"none", color:"#fff", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:17, letterSpacing:1, boxShadow:`0 6px 24px ${cat.glow}` }}>
-                {selectedPersonas.length ? `Continue with ${selectedPersonas.length} mentor${selectedPersonas.length>1?"s":""}` : "Continue →"}
-              </button>
-            </div>
-          </div>
-        )}
+          <PalmaraLogo />
 
-        {/* UPLOAD */}
-        {step === "upload" && cat && (
-          <div style={{ animation:"fadeUp .45s ease" }}>
-            <button onClick={() => setStep("persona")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:14, marginBottom:22, display:"flex", alignItems:"center", gap:6 }}>← Back</button>
-            <div style={{ textAlign:"center", marginBottom:22 }}>
-              <div style={{ fontSize:28, color:cat.color, marginBottom:6 }}>{cat.icon}</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, color:"#fff", marginBottom:5 }}>
-                {firstHandReading ? `Now Your ${handType.charAt(0).toUpperCase()+handType.slice(1)} Hand` : cat.title}
-              </h2>
-              <p style={{ color:"rgba(255,255,255,0.3)", fontSize:14 }}>
-                {firstHandReading ? "Upload your other palm for a combined deep reading" : "Upload a clear palm photo, good lighting, fingers relaxed"}
-              </p>
-              {selectedPersonas.length > 0 && (
-                <p style={{ color:"rgba(255,255,255,0.25)", fontSize:13, marginTop:6 }}>
-                  Channeling {selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" & ")}
-                </p>
-              )}
-            </div>
-            <div style={{ display:"flex", gap:10, marginBottom:14 }}>
-              {["left","right"].map(h => (
-                <button key={h} onClick={() => setHandType(h)} style={{ flex:1, padding:"11px", borderRadius:11, cursor:"pointer", fontSize:15, fontFamily:"'Cormorant Garamond',serif", letterSpacing:1, transition:"all .2s", background: handType===h ? `${cat.color}18` : "rgba(255,255,255,0.03)", border:`1px solid ${handType===h ? cat.color : "rgba(255,255,255,0.07)"}`, color: handType===h ? cat.color : "rgba(255,255,255,0.35)" }}>
-                  {h.charAt(0).toUpperCase()+h.slice(1)} Hand
-                </button>
-              ))}
-            </div>
-            <select value={zodiac} onChange={e => setZodiac(e.target.value)} style={{ width:"100%", padding:"12px 16px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color: zodiac?"#fff":"rgba(255,255,255,0.28)", fontSize:15, fontFamily:"'Crimson Text',serif", marginBottom:14, cursor:"pointer" }}>
-              <option value="">Add your zodiac sign (optional)</option>
-              {ZODIAC_SIGNS.map(z => <option key={z} value={z} style={{ background:"#1a1520" }}>{z}</option>)}
-            </select>
-            <div onDrop={e => { e.preventDefault(); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]); }} onDragOver={e => e.preventDefault()} onClick={() => fileRef.current.click()}
-              style={{ border:`2px dashed ${imageUrl ? cat.color : "rgba(255,255,255,0.1)"}`, borderRadius:18, padding:"26px 20px", textAlign:"center", cursor:"pointer", background:"rgba(255,255,255,0.01)", transition:"all .3s", marginBottom:14, minHeight:170, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column" }}>
-              {imageUrl ? (
-                <div style={{ width:"100%" }}>
-                  <img src={imageUrl} alt="Palm" style={{ maxHeight:190, borderRadius:10, objectFit:"cover", marginBottom:10 }}/>
-                  <p style={{ color:"rgba(255,255,255,0.3)", fontSize:13, marginTop:4 }}>Tap to change photo</p>
-                </div>
-              ) : (
-                <>
-                  <div style={{ fontSize:38, marginBottom:10, opacity:.28 }}>🤚</div>
-                  <p style={{ color:"rgba(255,255,255,0.3)", fontSize:15 }}>Tap to upload or drag and drop</p>
-                  <p style={{ color:"rgba(255,255,255,0.15)", fontSize:12, marginTop:4 }}>JPG or PNG, clear natural light</p>
-                </>
-              )}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={e => { if(e.target.files[0]) { handleFile(e.target.files[0]); e.target.value = ""; } }}/>
-            <button className="btn-h" onClick={getReading} disabled={!imageB64} style={{ width:"100%", padding:18, borderRadius:14, fontSize:19, fontFamily:"'Cormorant Garamond',serif", letterSpacing:2, background: imageB64?`linear-gradient(135deg,${cat.color},${cat.color}99)`:"rgba(255,255,255,0.04)", border:"none", color: imageB64?"#fff":"rgba(255,255,255,0.2)", cursor: imageB64?"pointer":"not-allowed", boxShadow: imageB64?`0 8px 32px ${cat.glow}`:"none" }}>
-              Read My Palm →
-            </button>
-          </div>
-        )}
+          <motion.p
+            initial={{ opacity:0 }} animate={{ opacity:1 }}
+            transition={{ delay:0.4, duration:0.6 }}
+            className="text-white/20 text-[10px] tracking-[7px] uppercase mt-2"
+          >Palm · Zodiac · Soul</motion.p>
 
-        {step === "loading" && <Loader label={loadingReading ? "Reading your palm lines..." : "Crafting your personal plan..."}/>}
+          <AnimatePresence>
+            {isPro && (
+              <motion.div
+                initial={{ opacity:0, scale:0.8, y:6 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.8 }}
+                transition={{ type:"spring", stiffness:300, damping:24 }}
+                className="mt-4 flex justify-center"
+              >
+                <Badge variant="pro" className="text-[12px] px-4 py-1.5 gap-1.5">
+                  <Crown className="w-3 h-3" /> Palmara Pro
+                </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* RESULT */}
-        {step === "result" && reading && (
-          <div style={{ animation:"fadeUp .55s ease" }}>
-            {selectedPersonas.length > 0 && (
-              <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
-                {selectedPersonas.map(id => {
-                  const p = PERSONAS.find(x => x.id === id);
-                  return (
-                    <div key={id} style={{ flex:1, background:`${p.color}10`, border:`1px solid ${p.color}35`, borderRadius:12, padding:"10px 14px", minWidth:130 }}>
-                      <div style={{ fontSize:18, marginBottom:3 }}>{p.emoji}</div>
-                      <div style={{ color:p.color, fontSize:13, fontFamily:"'Cormorant Garamond',serif", fontWeight:600 }}>{p.name}</div>
-                      <div style={{ color:"rgba(255,255,255,0.25)", fontSize:11, fontStyle:"italic", lineHeight:1.3, marginTop:2 }}>"{p.quote.slice(0,45)}..."</div>
+          <AnimatePresence>
+            {!freeUsed && !isPro && (
+              <motion.div
+                initial={{ opacity:0, scale:0.8, y:6 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.8 }}
+                transition={{ delay:0.5, type:"spring", stiffness:300, damping:24 }}
+                className="mt-5 flex justify-center"
+              >
+                <Badge variant="free" className="text-[13px] px-5 py-2 rounded-3xl gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  First reading free, no signup needed
+                </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* ── Step content ── */}
+        <AnimatePresence mode="wait">
+
+          {/* HOME */}
+          {step === "home" && (
+            <motion.div key="home" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+              <motion.div
+                initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.08, duration:0.35, ease }}
+                className="mb-7"
+              >
+                <Input
+                  placeholder="Your name (optional, appears on report)"
+                  value={userName}
+                  onChange={e => setUserName(e.target.value)}
+                />
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity:0 }} animate={{ opacity:1 }}
+                transition={{ delay:0.15 }}
+                className="text-white/25 text-center mb-6 text-base italic tracking-wide"
+              >What would you like insight on?</motion.p>
+
+              <motion.div variants={staggerList} initial="hidden" animate="visible" className="flex flex-col gap-3.5">
+                {CATEGORIES.map((c) => (
+                  <motion.div key={c.id} variants={cardItem}
+                    whileHover={{ y:-4, boxShadow:`0 18px 52px ${c.glow}` }}
+                    whileTap={{ scale:0.98 }}
+                    onClick={() => selectCategory(c)}
+                    className="flex items-center gap-4 px-6 py-5 rounded-[20px] cursor-pointer"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      backdropFilter: "blur(20px)",
+                      WebkitBackdropFilter: "blur(20px)",
+                      border: `1px solid ${c.color}30`,
+                      boxShadow: `0 6px 28px ${c.glow}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                    }}
+                  >
+                    <motion.div
+                      whileHover={{ scale:1.16, rotate:8 }}
+                      transition={{ type:"spring", stiffness:420, damping:18 }}
+                      className="w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center text-[22px]"
+                      style={{ background:`${c.color}14`, border:`1px solid ${c.color}35`, color:c.color, boxShadow:`0 0 20px ${c.glow}` }}
+                    >{c.icon}</motion.div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="font-garamond font-semibold text-[19px] text-white mb-0.5">{c.title}</div>
+                      <div className="text-[12.5px] text-white/25">{c.subtitle}</div>
                     </div>
+
+                    {!isPro && freeUsed && PREMIUM_CATEGORIES.includes(c.id) && <Badge variant="pro">PRO</Badge>}
+
+                    <motion.div
+                      animate={{ x:[0,4,0] }}
+                      transition={{ duration:2.2, repeat:Infinity, ease:"easeInOut" }}
+                    >
+                      <ChevronRight className="w-5 h-5 text-white/15" />
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* PERSONA */}
+          {step === "persona" && cat && (
+            <motion.div key="persona" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+              <motion.button
+                whileHover={{ x:-3 }} whileTap={{ scale:0.96 }}
+                onClick={() => setStep("home")}
+                className="flex items-center gap-2 text-sm text-white/30 mb-6 bg-transparent border-0 cursor-pointer hover:text-white/50 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back
+              </motion.button>
+
+              <motion.div
+                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.08, ease }}
+                className="text-center mb-8"
+              >
+                <motion.div animate={{ scale:[1,1.1,1] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
+                  className="text-[30px] mb-3" style={{ color:cat.color }}>{cat.icon}</motion.div>
+                <h2 className="font-garamond text-[30px] text-white mb-2">Choose Your Mentors</h2>
+                <p className="text-white/30 text-[14px] leading-relaxed">
+                  Pick up to 2 people you admire.<br/>Your growth advice will channel their philosophy.
+                </p>
+
+                <AnimatePresence>
+                  {selectedPersonas.length > 0 && (
+                    <motion.div
+                      initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }} exit={{ opacity:0, height:0 }}
+                      transition={{ duration:0.3, ease }}
+                      className="mt-4 flex justify-center gap-2 flex-wrap overflow-hidden"
+                    >
+                      {selectedPersonas.map(id => {
+                        const p = PERSONAS.find(x => x.id === id);
+                        return (
+                          <motion.span key={id}
+                            initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:0.7, opacity:0 }}
+                            transition={{ type:"spring", stiffness:320, damping:22 }}
+                            className="rounded-2xl px-4 py-1.5 text-[13px]"
+                            style={{ background:`${p.color}20`, border:`1px solid ${p.color}50`, color:p.color }}
+                          >{p.emoji} {p.name}</motion.span>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* 2-col game character grid */}
+              <motion.div
+                variants={staggerList} initial="hidden" animate="visible"
+                className="grid grid-cols-2 gap-3 mb-7"
+              >
+                {PERSONAS.map(p => {
+                  const selected = selectedPersonas.includes(p.id);
+                  const disabled = !selected && selectedPersonas.length >= 2;
+                  return (
+                    <motion.div key={p.id} variants={cardItem}
+                      whileHover={!disabled ? { y:-3, boxShadow:`0 16px 40px ${p.color}28` } : {}}
+                      whileTap={!disabled ? { scale:0.97 } : {}}
+                      animate={selected ? { boxShadow:[`0 0 0px ${p.color}00`,`0 0 28px ${p.color}40`,`0 0 0px ${p.color}00`] } : { boxShadow:"none" }}
+                      transition={selected ? { boxShadow:{ duration:2.2, repeat:Infinity, ease:"easeInOut" } } : { duration:0.25 }}
+                      onClick={() => !disabled && togglePersona(p.id)}
+                      className="relative rounded-2xl p-5 flex flex-col transition-all duration-200"
+                      style={{
+                        background: selected
+                          ? `linear-gradient(145deg,${p.color}18,${p.color}08)`
+                          : "rgba(255,255,255,0.04)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        border: `1px solid ${selected ? p.color+"55" : "rgba(255,255,255,0.08)"}`,
+                        boxShadow: selected ? `inset 0 1px 0 rgba(255,255,255,0.1)` : "none",
+                        opacity: disabled ? 0.3 : 1,
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        minHeight: 172,
+                      }}
+                    >
+                      <div className="text-[42px] mb-2 leading-none">{p.emoji}</div>
+                      <div className="font-garamond font-bold text-[16px] leading-tight mb-0.5 transition-colors duration-200"
+                        style={{ color: selected ? p.color : "rgba(255,255,255,0.82)" }}>{p.name}</div>
+                      <div className="text-[10px] tracking-[1.2px] uppercase mb-2.5 transition-colors duration-200"
+                        style={{ color: selected ? p.color+"aa" : "rgba(255,255,255,0.22)" }}>{p.trait}</div>
+                      <div className="text-[11.5px] italic leading-[1.55] transition-colors duration-200 mt-auto"
+                        style={{ color: selected ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.18)" }}>
+                        "{p.quote}"
+                      </div>
+                      <AnimatePresence>
+                        {selected && (
+                          <motion.div
+                            initial={{ scale:0, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:0, opacity:0 }}
+                            transition={{ type:"spring", stiffness:420, damping:22 }}
+                            className="absolute top-3 right-3"
+                          >
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center"
+                              style={{ background: p.color }}>
+                              <Check className="w-3 h-3 text-black" />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
                   );
                 })}
-              </div>
-            )}
+              </motion.div>
 
-            <div style={{ background:"linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))", border:`1px solid ${cat?.color}22`, borderRadius:22, padding:"26px 24px", marginBottom:20, boxShadow:`0 8px 48px ${cat?.glow}15` }}>
-              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18, paddingBottom:14, borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ width:38, height:38, borderRadius:10, background:`${cat?.color}14`, border:`1px solid ${cat?.color}33`, display:"flex", alignItems:"center", justifyContent:"center", color:cat?.color, fontSize:17 }}>{cat?.icon}</div>
-                <div>
-                  <div style={{ color:"#fff", fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600 }}>{cat?.title}</div>
-                  <div style={{ color:"rgba(255,255,255,0.28)", fontSize:12 }}>{handType.charAt(0).toUpperCase()+handType.slice(1)} Hand{zodiac?` · ${zodiac}`:""}</div>
-                </div>
-                <button className="btn-h" onClick={handleExport} style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"8px 14px", borderRadius:9, background: exportDone?"rgba(91,168,158,0.12)":"rgba(255,255,255,0.04)", border:`1px solid ${exportDone?"#5ba89e44":"rgba(255,255,255,0.08)"}`, color: exportDone?"#5ba89e":"rgba(255,255,255,0.4)", cursor:"pointer", fontSize:13, fontFamily:"'Crimson Text',serif" }}>
-                  {exportDone?"✓ Saved":"↓ PDF"}
-                </button>
-              </div>
-              <div>{formatText(reading, cat?.color)}</div>
-            </div>
+              <motion.div
+                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.28, ease }}
+                className="flex gap-2.5"
+              >
+                <Button variant="outline" size="lg" className="flex-1"
+                  onClick={() => { setSelectedPersonas([]); setStep("upload"); }}
+                >Skip</Button>
+                <Button size="lg" className="flex-[2] gap-1.5"
+                  style={{ background:`linear-gradient(135deg,${cat.color},${cat.color}88)`, color:"#fff", boxShadow:`0 6px 24px ${cat.glow}` }}
+                  onClick={() => setStep("upload")}
+                >
+                  {selectedPersonas.length ? `Continue with ${selectedPersonas.length} mentor${selectedPersonas.length>1?"s":""}` : "Continue"}
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
 
-            {!firstHandReading && (
-              <button className="btn-h" onClick={goToSecondHand} style={{ width:"100%", padding:16, borderRadius:14, background:"linear-gradient(135deg,rgba(201,168,76,0.12),rgba(155,127,232,0.12))", border:"1px solid rgba(201,168,76,0.35)", color:"#c9a84c", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:17, letterSpacing:1, marginBottom:20, textAlign:"center" }}>
-                ✦ Add {handType === "right" ? "Left" : "Right"} Hand for a Deeper Reading →
-              </button>
-            )}
+          {/* UPLOAD */}
+          {step === "upload" && cat && (
+            <motion.div key="upload" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+              <motion.button
+                whileHover={{ x:-3 }} whileTap={{ scale:0.96 }}
+                onClick={() => setStep("persona")}
+                className="flex items-center gap-2 text-sm text-white/30 mb-6 bg-transparent border-0 cursor-pointer hover:text-white/50 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back
+              </motion.button>
 
-            <div style={{ marginBottom:20 }}>
-              <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:"#fff", marginBottom:4, textAlign:"center" }}>Your Growth Plan</h3>
-              <p style={{ color:"rgba(255,255,255,0.28)", fontSize:13, textAlign:"center", marginBottom:16 }}>
-                {selectedPersonas.length ? `Advice channeled through ${selectedPersonas.map(id=>PERSONAS.find(p=>p.id===id)?.name).join(" & ")}` : "Tap any area for personalised advice"}
-              </p>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9 }}>
-                {IMPROVEMENT_PILLARS.map(p => (
-                  <div key={p.id} className="pillar-btn" onClick={() => getSuggestions(p.id)} style={{ background: activePillar===p.id?`${p.color}14`:"rgba(255,255,255,0.03)", border:`1px solid ${activePillar===p.id?p.color+"50":"rgba(255,255,255,0.07)"}`, borderRadius:13, padding:"13px 13px", cursor:"pointer", textAlign:"center", boxShadow: activePillar===p.id?`0 4px 20px ${p.color}18`:"none" }}>
-                    <div style={{ fontSize:20, marginBottom:4 }}>{p.icon}</div>
-                    <div style={{ color: activePillar===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:13, fontFamily:"'Cormorant Garamond',serif", lineHeight:1.3 }}>{p.label}</div>
-                  </div>
+              <motion.div
+                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.08, ease }}
+                className="text-center mb-7"
+              >
+                <motion.div animate={{ scale:[1,1.1,1] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
+                  className="text-[30px] mb-2" style={{ color:cat.color }}>{cat.icon}</motion.div>
+                <h2 className="font-garamond text-[28px] text-white mb-1.5">
+                  {firstHandReading ? `Now Your ${handType.charAt(0).toUpperCase()+handType.slice(1)} Hand` : cat.title}
+                </h2>
+                <p className="text-white/25 text-[14px]">
+                  {firstHandReading ? "Upload your other palm for a combined deep reading" : "Clear palm photo · Good lighting · Fingers relaxed"}
+                </p>
+                {selectedPersonas.length > 0 && (
+                  <p className="text-white/20 text-[13px] mt-2 italic">
+                    Channeling {selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" & ")}
+                  </p>
+                )}
+              </motion.div>
+
+              {/* Hand selector */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.14 }}
+                className="flex gap-2.5 mb-4">
+                {["left","right"].map(h => (
+                  <motion.button key={h}
+                    onClick={() => setHandType(h)}
+                    whileHover={{ y:-1 }} whileTap={{ scale:0.97 }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-xl font-garamond text-[15px] tracking-wide transition-all duration-200 cursor-pointer"
+                    style={{
+                      background: handType===h ? `${cat.color}18` : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${handType===h ? cat.color : "rgba(255,255,255,0.07)"}`,
+                      color: handType===h ? cat.color : "rgba(255,255,255,0.3)",
+                      boxShadow: handType===h ? `0 0 20px ${cat.glow}` : "none",
+                    }}
+                  >
+                    <Hand className="w-4 h-4 opacity-70" />
+                    {h.charAt(0).toUpperCase()+h.slice(1)} Hand
+                  </motion.button>
                 ))}
-              </div>
-            </div>
+              </motion.div>
 
-            {activePillar && (
-              <div style={{ background:"rgba(255,255,255,0.03)", border:`1px solid ${IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.color}28`, borderRadius:18, padding:"22px 20px", marginBottom:18, animation:"fadeUp .4s ease" }}>
-                {loadingSuggestions ? (
-                  <Loader label="Crafting your personal plan..."/>
+              {/* Zodiac */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.18 }} className="mb-4">
+                <select
+                  value={zodiac} onChange={e => setZodiac(e.target.value)}
+                  className="w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-[15px] font-crimson cursor-pointer transition-colors duration-200 focus:outline-none focus:border-[rgba(201,168,76,0.4)]"
+                  style={{ color: zodiac ? "#fff" : "rgba(255,255,255,0.25)", appearance:"none" }}
+                >
+                  <option value="" style={{ background:"#1a1520" }}>Add your zodiac sign (optional)</option>
+                  {ZODIAC_SIGNS.map(z => <option key={z} value={z} style={{ background:"#1a1520" }}>{z}</option>)}
+                </select>
+              </motion.div>
+
+              {/* Drop zone */}
+              <motion.div
+                initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.22, ease }}
+                onDrop={e => { e.preventDefault(); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]); }}
+                onDragOver={e => e.preventDefault()}
+                onClick={() => fileRef.current.click()}
+                className="flex flex-col items-center justify-center rounded-[22px] p-6 text-center cursor-pointer mb-4 transition-all duration-300"
+                style={{
+                  minHeight: 240,
+                  border: `2px dashed ${imageUrl ? cat.color : "rgba(255,255,255,0.1)"}`,
+                  background: imageUrl ? `${cat.color}06` : "rgba(255,255,255,0.015)",
+                  boxShadow: imageUrl ? `0 0 40px ${cat.glow}` : "none",
+                }}
+                whileHover={{ borderColor: imageUrl ? cat.color : "rgba(255,255,255,0.22)" }}
+              >
+                {imageUrl ? (
+                  <motion.div initial={{ opacity:0, scale:0.94 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.32, ease }} className="w-full">
+                    <div className="relative w-full rounded-xl overflow-hidden mb-3" style={{ height: 200 }}>
+                      <Image src={imageUrl} alt="Palm reading photo" fill unoptimized className="object-cover" sizes="480px" />
+                      {/* Scan animation overlay when fresh drop */}
+                      <motion.div className="absolute inset-0 rounded-xl"
+                        style={{ background: `linear-gradient(to top, ${cat.color}18, transparent)` }}
+                        animate={{ opacity: [0.4, 0.8, 0.4] }}
+                        transition={{ duration: 2.4, repeat: Infinity }} />
+                    </div>
+                    <p className="text-white/30 text-[13px]">Tap to change photo</p>
+                  </motion.div>
                 ) : (
                   <>
-                    <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, paddingBottom:12, borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-                      <span style={{ fontSize:20 }}>{IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.icon}</span>
-                      <span style={{ color:IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.color, fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600 }}>{IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.label}</span>
-                      {selectedPersonas.length > 0 && (
-                        <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.2)", fontSize:12 }}>via {selectedPersonas.map(id=>PERSONAS.find(p=>p.id===id)?.emoji).join(" ")}</span>
-                      )}
-                    </div>
-                    <div>{formatText(suggestions?.[activePillar], IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.color)}</div>
-                    <button className="btn-h" onClick={handleExport} style={{ marginTop:14, padding:"9px 18px", borderRadius:9, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.4)", cursor:"pointer", fontSize:13, fontFamily:"'Crimson Text',serif" }}>
-                      ↓ Export full report as PDF
-                    </button>
+                    <motion.div
+                      animate={{ y:[0,-9,0] }}
+                      transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}
+                      className="mb-4"
+                    >
+                      <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                        <Upload className="w-9 h-9 text-white/20" />
+                      </div>
+                    </motion.div>
+                    <p className="text-white/30 text-[15px] mb-1">Tap to upload or drag and drop</p>
+                    <p className="text-white/15 text-[13px]">JPG or PNG · Clear natural light</p>
                   </>
                 )}
-              </div>
-            )}
+              </motion.div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { if(e.target.files[0]) { handleFile(e.target.files[0]); e.target.value = ""; } }} />
 
-            {freeUsed && (
-              <div style={{ background:"linear-gradient(135deg,rgba(155,127,232,0.08),rgba(201,168,76,0.05))", border:"1px solid rgba(155,127,232,0.18)", borderRadius:18, padding:"20px 22px", marginBottom:18, textAlign:"center" }}>
-                <p style={{ color:"#fff", fontFamily:"'Cormorant Garamond',serif", fontSize:19, marginBottom:5 }}>Unlock Palmara Pro</p>
-                <p style={{ color:"rgba(255,255,255,0.3)", fontSize:13, marginBottom:16 }}>Unlimited readings · All categories · PDF reports · Persona coaching</p>
-                <button className="btn-h" style={{ padding:"12px 28px", borderRadius:11, background:"linear-gradient(135deg,#9b7fe8,#c9a84c)", border:"none", color:"#fff", cursor:"pointer", fontSize:16, fontFamily:"'Cormorant Garamond',serif", letterSpacing:1 }}>Start for $9.99 per month →</button>
-              </div>
-            )}
+              {/* CTA */}
+              <motion.div
+                animate={imageB64 ? { boxShadow:[`0 8px 36px ${cat.glow}`,`0 16px 56px ${cat.glow}`,`0 8px 36px ${cat.glow}`] } : {}}
+                transition={imageB64 ? { boxShadow:{ duration:2.5, repeat:Infinity, ease:"easeInOut" } } : {}}
+                className="rounded-[14px]"
+              >
+                <Button size="xl" className="w-full tracking-widest gap-2" disabled={!imageB64} onClick={getReading}
+                  style={imageB64 ? { background:`linear-gradient(135deg,${cat.color},${cat.color}99)`, color:"#fff" } : {}}
+                  variant={imageB64 ? "default" : "outline"}
+                >
+                  <ScanLine className="w-5 h-5" />
+                  Read My Palm
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
 
-            <div style={{ display:"flex", gap:10 }}>
-              <button className="btn-h" onClick={reset} style={{ flex:1, padding:"13px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.45)", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:16 }}>New Reading</button>
-              <button className="btn-h" onClick={() => { setStep("upload"); setImageUrl(null); setImageB64(null); setReading(""); setSuggestions(null); setActivePillar(null); }} style={{ flex:1, padding:"13px", borderRadius:11, background:`${cat?.color}12`, border:`1px solid ${cat?.color}33`, color:cat?.color, cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontSize:16 }}>Other Hand</button>
-            </div>
-          </div>
-        )}
+          {/* LOADING */}
+          {step === "loading" && (
+            <motion.div key="loading" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}>
+              {imageUrl
+                ? <ScanningLoader imageUrl={imageUrl} />
+                : <Loader label="Reading your palm lines..." />
+              }
+            </motion.div>
+          )}
+
+          {/* RESULT */}
+          {step === "result" && reading && (
+            <motion.div key="result" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+
+              {/* Persona chips */}
+              {selectedPersonas.length > 0 && (
+                <motion.div variants={staggerList} initial="hidden" animate="visible" className="flex gap-2 mb-5 flex-wrap">
+                  {selectedPersonas.map(id => {
+                    const p = PERSONAS.find(x => x.id === id);
+                    return (
+                      <motion.div key={id} variants={cardItem}
+                        className="flex-1 rounded-xl p-4 min-w-[130px]"
+                        style={{ background:`${p.color}10`, border:`1px solid ${p.color}30`, backdropFilter:"blur(12px)" }}
+                      >
+                        <div className="text-[22px] mb-1">{p.emoji}</div>
+                        <div className="font-garamond font-semibold text-[14px]" style={{ color:p.color }}>{p.name}</div>
+                        <div className="text-[11px] italic leading-tight mt-1 text-white/22">"{p.quote.slice(0,48)}..."</div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+
+              {/* Reading card */}
+              <motion.div
+                initial={{ opacity:0, y:16, scale:0.98 }}
+                animate={{ opacity:1, y:0, scale:1 }}
+                transition={{ duration:0.45, ease }}
+                className="rounded-[24px] p-7 mb-5"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: `1px solid ${cat?.color}25`,
+                  boxShadow: `0 8px 52px ${cat?.glow}18, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                }}
+              >
+                <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.05]">
+                  <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-[18px]"
+                    style={{ background:`${cat?.color}16`, border:`1px solid ${cat?.color}35`, color:cat?.color }}
+                  >{cat?.icon}</div>
+                  <div>
+                    <div className="font-garamond font-semibold text-[18px] text-white">{cat?.title}</div>
+                    <div className="text-xs text-white/25">{handType.charAt(0).toUpperCase()+handType.slice(1)} Hand{zodiac?` · ${zodiac}`:""}</div>
+                  </div>
+
+                  {/* PDF export button with state machine */}
+                  <motion.button
+                    onClick={handleExport}
+                    disabled={pdfState !== "idle"}
+                    whileHover={pdfState === "idle" ? { scale:1.05 } : {}}
+                    whileTap={pdfState === "idle" ? { scale:0.96 } : {}}
+                    className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] transition-all duration-200 border border-transparent cursor-pointer"
+                    style={{
+                      color: pdfState === "done" ? "#5ba89e" : "rgba(255,255,255,0.35)",
+                      borderColor: pdfState === "done" ? "rgba(91,168,158,0.3)" : "rgba(255,255,255,0.08)",
+                      background: pdfState === "done" ? "rgba(91,168,158,0.08)" : "rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <AnimatePresence mode="wait">
+                      {pdfState === "idle" && (
+                        <motion.div key="idle" className="flex items-center gap-1.5"
+                          initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-4 }}
+                          transition={{ duration:0.15 }}>
+                          <motion.div animate={{ y:[0,-2,0] }} transition={{ duration:1.8, repeat:Infinity }}>
+                            <Download className="w-3.5 h-3.5" />
+                          </motion.div>
+                          PDF
+                        </motion.div>
+                      )}
+                      {pdfState === "saving" && (
+                        <motion.div key="saving" className="flex items-center gap-1.5"
+                          initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-4 }}
+                          transition={{ duration:0.15 }}>
+                          <motion.div className="w-3.5 h-3.5 rounded-full border-[1.5px] border-white/20 border-t-white/70"
+                            animate={{ rotate:360 }} transition={{ duration:0.7, repeat:Infinity, ease:"linear" }} />
+                          Saving...
+                        </motion.div>
+                      )}
+                      {pdfState === "done" && (
+                        <motion.div key="done" className="flex items-center gap-1.5"
+                          initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.7 }}
+                          transition={{ type:"spring", stiffness:400, damping:22 }}>
+                          <Check className="w-3.5 h-3.5" /> Saved
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+                {formatText(reading, cat?.color)}
+              </motion.div>
+
+              {/* Second hand CTA */}
+              {!firstHandReading && (
+                <motion.div
+                  initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.28, ease }}
+                  className="mb-5"
+                >
+                  <Button variant="outline" size="lg" className="w-full tracking-wide gap-2"
+                    style={{ borderColor:"rgba(201,168,76,0.3)", color:"#c9a84c", background:"linear-gradient(135deg,rgba(201,168,76,0.06),rgba(155,127,232,0.06))" }}
+                    onClick={goToSecondHand}
+                  >
+                    <Hand className="w-4 h-4" />
+                    Add {handType === "right" ? "Left" : "Right"} Hand for Deeper Reading
+                  </Button>
+                </motion.div>
+              )}
+
+              {/* Growth plan */}
+              <motion.div
+                initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.34, ease }}
+                className="mb-5"
+              >
+                <h3 className="font-garamond text-[24px] text-white mb-1 text-center">Your Growth Plan</h3>
+                <p className="text-white/25 text-[13px] text-center mb-5">
+                  {selectedPersonas.length
+                    ? `Advice channeled through ${selectedPersonas.map(id=>PERSONAS.find(p=>p.id===id)?.name).join(" & ")}`
+                    : "Tap any pillar to reveal personalised advice"}
+                </p>
+                <motion.div variants={staggerList} initial="hidden" animate="visible" className="grid grid-cols-2 gap-3">
+                  {IMPROVEMENT_PILLARS.map(({ id, Icon: PillarIcon, label, color }) => (
+                    <motion.div key={id} variants={cardItem}
+                      animate={flippedPillar === id
+                        ? { rotateY: [0, 90, 180, 270, 360] }
+                        : activePillar === id
+                          ? { boxShadow: [`0 0 0px ${color}00`, `0 6px 24px ${color}28`, `0 0 0px ${color}00`] }
+                          : {}
+                      }
+                      transition={flippedPillar === id
+                        ? { duration: 0.6, ease: "easeInOut" }
+                        : activePillar === id
+                          ? { boxShadow: { duration: 2.2, repeat: Infinity } }
+                          : { duration: 0.25 }
+                      }
+                      whileHover={{ scale:1.04, y:-2 }}
+                      whileTap={{ scale:0.97 }}
+                      onClick={() => handlePillarClick(id)}
+                      className="rounded-[14px] p-4 text-center cursor-pointer transition-colors duration-200"
+                      style={{
+                        background: activePillar===id ? `${color}14` : "rgba(255,255,255,0.04)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        border: `1px solid ${activePillar===id ? color+"45" : "rgba(255,255,255,0.07)"}`,
+                      }}
+                    >
+                      <PillarIcon className="w-5 h-5 mx-auto mb-2 transition-colors duration-200"
+                        style={{ color: activePillar===id ? color : "rgba(255,255,255,0.35)" }} />
+                      <div className="font-garamond text-[13px] leading-tight transition-colors duration-200"
+                        style={{ color: activePillar===id ? color : "rgba(255,255,255,0.45)" }}>{label}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Pillar detail panel */}
+              <AnimatePresence>
+                {activePillar && (
+                  <motion.div
+                    key={activePillar}
+                    initial={{ opacity:0, height:0, y:8 }}
+                    animate={{ opacity:1, height:"auto", y:0 }}
+                    exit={{ opacity:0, height:0, y:-4 }}
+                    transition={{ duration:0.36, ease }}
+                    className="rounded-[20px] p-6 mb-5 overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      backdropFilter: "blur(16px)",
+                      border: `1px solid ${IMPROVEMENT_PILLARS.find(p=>p.id===activePillar)?.color}25`,
+                    }}
+                  >
+                    {loadingSuggestions ? <Loader label="Crafting your personal plan..."/> : (() => {
+                      const ap = IMPROVEMENT_PILLARS.find(p => p.id === activePillar);
+                      const ApIcon = ap?.Icon;
+                      return (
+                        <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.1 }}>
+                          <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/[0.05]">
+                            {ApIcon && <ApIcon className="w-5 h-5 shrink-0" style={{ color:ap.color }} />}
+                            <span className="font-garamond font-semibold text-[19px]" style={{ color:ap?.color }}>{ap?.label}</span>
+                            {selectedPersonas.length > 0 && (
+                              <span className="ml-auto text-xs text-white/20">
+                                via {selectedPersonas.map(id=>PERSONAS.find(p=>p.id===id)?.emoji).join(" ")}
+                              </span>
+                            )}
+                          </div>
+                          <div>{formatText(suggestions?.[activePillar], ap?.color)}</div>
+                          <Button variant="ghost" size="sm" className="mt-5 gap-1.5" onClick={handleExport}>
+                            <FileDown className="w-4 h-4" /> Export full report as PDF
+                          </Button>
+                        </motion.div>
+                      );
+                    })()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Pro upsell */}
+              <AnimatePresence>
+                {freeUsed && !isPro && (
+                  <motion.div
+                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                    transition={{ delay:0.5, ease }}
+                    className="rounded-[20px] p-6 mb-5 text-center"
+                    style={{
+                      background: "linear-gradient(135deg,rgba(155,127,232,0.08),rgba(201,168,76,0.05))",
+                      backdropFilter: "blur(16px)",
+                      border: "1px solid rgba(155,127,232,0.2)",
+                    }}
+                  >
+                    <p className="font-garamond text-[20px] text-white mb-1.5">Unlock Palmara Pro</p>
+                    <p className="text-white/25 text-[13px] mb-5">Unlimited readings · All categories · PDF reports · Persona coaching</p>
+                    <ResultUpsellButton />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Bottom actions */}
+              <motion.div
+                initial={{ opacity:0 }} animate={{ opacity:1 }}
+                transition={{ delay:0.4 }}
+                className="flex gap-2.5"
+              >
+                <Button variant="outline" size="lg" className="flex-1 gap-1.5" onClick={reset}>
+                  <RotateCcw className="w-4 h-4" /> New Reading
+                </Button>
+                <Button variant="outline" size="lg" className="flex-1 gap-1.5"
+                  style={{ borderColor:`${cat?.color}30`, color:cat?.color }}
+                  onClick={() => { setStep("upload"); setImageUrl(null); setImageB64(null); setReading(""); setSuggestions(null); setActivePillar(null); }}
+                >
+                  <Hand className="w-4 h-4" /> Other Hand
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
       </div>
 
       {paywall && <Paywall cat={paywall} onClose={() => setPaywall(null)}/>}

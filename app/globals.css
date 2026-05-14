@@ -1,9 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+@import "tailwindcss";
+
+/* ── Palmara shadcn CSS variables (dark theme) ──────────────────────────── */
+:root {
+  --background:         9 4% 6%;       /* #09070f */
+  --foreground:         40 12% 90%;
+
+  --card:               270 18% 10%;
+  --card-foreground:    40 12% 90%;
+
+  --popover:            270 20% 8%;
+  --popover-foreground: 40 12% 90%;
+
+  --primary:            43 55% 55%;    /* gold #c9a84c */
+  --primary-foreground: 0 0% 5%;
+
+  --secondary:          265 45% 68%;   /* purple #9b7fe8 */
+  --secondary-foreground: 0 0% 5%;
+
+  --muted:              270 12% 18%;
+  --muted-foreground:   270 8% 55%;
+
+  --accent:             265 45% 68%;
+  --accent-foreground:  0 0% 5%;
+
+  --destructive:        0 62% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border:             270 14% 18%;
+  --input:              270 14% 16%;
+  --ring:               43 55% 55%;
+
+  --radius: 0.75rem;
+
+  /* Palmara brand tokens */
+  --palmara-gold:    #c9a84c;
+  --palmara-purple:  #9b7fe8;
+  --palmara-love:    #e8636a;
+  --palmara-teal:    #5ba89e;
+  --palmara-bg:      #09070f;
+  --palmara-surface: rgba(255,255,255,0.04);
+  --palmara-border:  rgba(255,255,255,0.07);
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  border-color: hsl(var(--border));
 }
 
 body {
-  background: #09070f;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: #2a1f45; border-radius: 2px; }
+
+/* ── Font utilities ─────────────────────────────────────────────────────── */
+.font-garamond { font-family: 'Cormorant Garamond', serif; }
+.font-crimson  { font-family: 'Crimson Text', serif; }
+
+/* ── Keyframes ──────────────────────────────────────────────────────────── */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.06; transform: scale(1); }
+  50%       { opacity: 0.95; transform: scale(1.6); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position:  300% center; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+/* ── Glass card utility ─────────────────────────────────────────────────── */
+.glass {
+  background:     rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
