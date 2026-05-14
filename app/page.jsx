@@ -41,6 +41,35 @@ const IMPROVEMENT_PILLARS = [
 ];
 
 const ZODIAC_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+
+const ZODIAC_DATA = {
+  Aries:       { emoji:"♈", element:"Fire",  planet:"Mars",    traits:"bold, pioneering, competitive, impulsive, courageous, natural leader" },
+  Taurus:      { emoji:"♉", element:"Earth", planet:"Venus",   traits:"persistent, sensual, stubborn, reliable, pleasure-seeking, materially driven" },
+  Gemini:      { emoji:"♊", element:"Air",   planet:"Mercury", traits:"curious, adaptable, dual-natured, communicative, witty, easily bored" },
+  Cancer:      { emoji:"♋", element:"Water", planet:"Moon",    traits:"deeply intuitive, emotionally driven, nurturing, protective, moody, home-oriented" },
+  Leo:         { emoji:"♌", element:"Fire",  planet:"Sun",     traits:"charismatic, generous, proud, dramatic, loyal, craves recognition" },
+  Virgo:       { emoji:"♍", element:"Earth", planet:"Mercury", traits:"analytical, perfectionist, service-oriented, health-conscious, detail-focused, critical" },
+  Libra:       { emoji:"♎", element:"Air",   planet:"Venus",   traits:"diplomatic, balanced, indecisive, charming, justice-seeking, partnership-oriented" },
+  Scorpio:     { emoji:"♏", element:"Water", planet:"Pluto",   traits:"intense, transformative, secretive, powerful, obsessive, deeply perceptive" },
+  Sagittarius: { emoji:"♐", element:"Fire",  planet:"Jupiter", traits:"adventurous, philosophical, blunt, freedom-loving, optimistic, big-picture thinker" },
+  Capricorn:   { emoji:"♑", element:"Earth", planet:"Saturn",  traits:"disciplined, ambitious, patient, conservative, responsible, relentlessly goal-driven" },
+  Aquarius:    { emoji:"♒", element:"Air",   planet:"Uranus",  traits:"innovative, rebellious, humanitarian, detached, visionary, unconventional" },
+  Pisces:      { emoji:"♓", element:"Water", planet:"Neptune", traits:"empathic, intuitive, dreamy, spiritual, escapist, deeply creative" },
+};
+
+// How each celebrity actually speaks — specific language patterns and worldview
+const PERSONA_VOICE = {
+  kobe:    "You ARE Kobe Bryant. Speak with obsessive intensity. Reference the Mamba Mentality — the relentless pursuit of greatness through detail, sacrifice, and zero days off. Say things like 'The work', '4am', 'film study', 'details matter', 'rest at the end'. Be demanding, specific, uncompromising. Shame mediocrity, celebrate obsession.",
+  jobs:    "You ARE Steve Jobs. Speak with visionary intensity and poetic precision. Reference simplicity, beauty, focus, and the dent in the universe. Say things like 'insanely great', 'think different', '1000 songs in your pocket', 'reality distortion field'. Be philosophical, provocative, and demand perfection. Connect everything to the deeper WHY.",
+  tyson:   "You ARE Mike Tyson. Speak raw, blunt, and street-wise. No softening. Reference the streets, surviving adversity, self-destruction and rebuilding. Say things like 'Everyone has a plan', 'I was afraid but I did it anyway', 'discipline is doing what you hate like you love it'. Be brutally honest about pain, fear, and what it takes.",
+  oprah:   "You ARE Oprah Winfrey. Speak with warmth, emotional depth, and empowerment. Reference turning pain into purpose, living your truth, and gratitude. Say things like 'What I know for sure', 'your best life', 'the wound is where the light enters'. Be nurturing but challenge them to step into their fullest self.",
+  ronaldo: "You ARE Cristiano Ronaldo. Speak with relentless competitive drive. Reference hard work over talent, dedication, statistics, and obsessive training routines. Say things like 'Talent without working hard is nothing', 'I am the best', 'CR7 mindset'. Be direct, confident, statistical. Discipline and physical excellence above all.",
+  jordan:  "You ARE Michael Jordan. Speak with icy competitive obsession. Reference failure as fuel, the killer instinct, and letting nothing slide. Say things like 'I never lost — I just ran out of time', 'limits are lies', 'I took it personally'. Be cold, relentless, challenge every weakness they show. No excuses accepted.",
+  musk:    "You ARE Elon Musk. Speak with first-principles thinking — break everything down to physics, question every assumption. Reference civilization-scale thinking, 10x not 10%, physics constraints, and ignoring what's 'impossible'. Say things like 'The first step is to establish that something is possible', 'Physics is the law, everything else is a recommendation'. Be blunt and think in orders of magnitude.",
+  martha:  "You ARE Martha Stewart. Speak with precise, elevated craft consciousness. Reference the beauty of doing things properly, attention to detail, and the discipline of mastery. Say things like 'Life is too complicated not to be orderly', 'do it beautifully or don't do it at all'. Emphasize systems, aesthetics, and the pleasure of excellence.",
+  tony:    "You ARE Tony Robbins. Speak with explosive energy and pattern-interrupting intensity. Reference peak state, massive action, the RPM system, and the six human needs. Say things like 'The only impossible journey is the one you never begin', 'change your state, change your life', 'progress equals happiness'. Be loud, electric, and demand immediate action.",
+};
+
 const PREMIUM_CATEGORIES = ["health", "full"];
 
 // ── animation presets ──────────────────────────────────────────────────────────
@@ -551,11 +580,14 @@ export default function PalmaraApp() {
   const buildPersonaContext = () => {
     if (!selectedPersonas.length) return "";
     const personas = selectedPersonas.map(id => PERSONAS.find(p => p.id === id));
+    const voices = selectedPersonas.map(id => PERSONA_VOICE[id]).filter(Boolean);
     return `
-The user admires these people and wants advice channeled through their philosophy and voice:
-${personas.map(p => `${p.name} (${p.trait}): Known for saying "${p.quote}"`).join("\n")}
+PERSONA VOICE INSTRUCTIONS — This is critical. The user has chosen these people as their mentors:
+${personas.map(p => `• ${p.name} (${p.trait}): "${p.quote}"`).join("\n")}
 
-When giving improvement advice, channel their actual voice, philosophy, and famous sayings. Use their real language and approach. Kobe would say mamba mentality. Jobs would say think different. Tyson would be raw and direct. Make it feel like THEY are speaking.`;
+${voices.map((v, i) => `[${personas[i].name}]: ${v}`).join("\n\n")}
+
+${voices.length > 1 ? `Blend both voices naturally — alternate between their perspectives, let them complement each other. Do not just quote them; BECOME them.` : "Do not just reference this person — write AS them. Every sentence should sound like it came from their mouth."}`;
   };
 
   const callClaude = async (messages, system) => {
@@ -574,18 +606,28 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
   const getReading = async () => {
     if (!imageB64) return;
     setLoadingReading(true); setStep("loading");
+
+    const zd = zodiac ? ZODIAC_DATA[zodiac] : null;
+    const zodiacCtx = zd ? `
+ZODIAC CONTEXT — Integrate this throughout the reading where the palm lines confirm, amplify, or create tension with these traits:
+Sign: ${zodiac} ${zd.emoji} | Element: ${zd.element} | Ruling planet: ${zd.planet}
+Core traits: ${zd.traits}
+Specifically: where do the palm lines align with ${zodiac} nature? Where do they diverge or add nuance? Be precise — not just "as a ${zodiac} you tend to..." but "your ${zodiac} fire shows up in your fate line as..." Use astrology as a lens, not a label.` : "";
+
     const catPrompts = {
-      love:     "Focus on love and relationships. Analyze heart line depth, curve, length. Look at Venus mount fullness. Identify attachment/relationship lines. Give romantic profile, what they need in love, relationship patterns, and 3 specific insights.",
-      business: "Focus on business and wealth. Analyze fate line strength, Mercury line, Jupiter mount. Give career archetype, money mindset, leadership style, best business environment, and 3 wealth-building insights.",
-      health:   "Focus on health and vitality. Analyze life line arc, depth, breaks. Look for health line and mount fullness. Give energy profile, stress indicators, physical strengths and vulnerabilities, and 3 actionable health insights.",
-      full:     `Give a complete reading covering heart line, head line, life line, fate line, and key mounts. ${zodiac ? `Weave in their ${zodiac} zodiac nature.` : ""} Cover love, business, and health. Close with their one-sentence life theme.`,
+      love:     "Analyze the heart line: its depth (emotional intensity), curve (expression style), length (relationship capacity), and any branches or breaks (past wounds or multiple loves). Examine the Venus mount fullness (sensuality, capacity for love), any attachment/relationship lines on the percussion edge, and the angle of the thumb (stubbornness vs compromise). Give their romantic archetype, what they need to feel truly loved, their unconscious relationship patterns, and 3 specific actionable insights about their love life.",
+      business: "Analyze the fate line: its origin (self-made vs family path), depth (career certainty), breaks or shifts (pivots ahead). Examine the Mercury line (communication, business acumen), Jupiter mount (ambition, leadership, authority), and Apollo line if visible (creative success, public recognition). Give their career archetype, money mindset, natural leadership style, the business environment where they thrive, and 3 wealth-building insights specific to what these lines reveal.",
+      health:   "Analyze the life line: its arc width (vitality reserves), depth (constitution strength), any breaks or islands (health events, periods of depletion). Look for the health/Mercury line (digestive system, nervous system sensitivity), mount fullness (energy reserves by area), and the overall skin texture and line clarity. Give their energy archetype, current stress indicators visible in the hand, physical strengths and genuine vulnerabilities, and 3 actionable health improvements grounded in what the palm shows.",
+      full:     `Give a complete, integrated reading. Analyze: heart line (emotional life), head line (thinking style, decision-making), life line (vitality, major life chapters), fate line (career path, destiny), and the dominant mounts. Each line should connect to the others — show how they interact. Cover love, purpose, health, and the mind. Close with their one-sentence soul theme — the thread running through everything in this hand.`,
     };
-    const sys = `You are Palmara, a world-class palm reader and intuitive life coach. Analyze the palm photo with depth and wisdom. Be specific, personal, and actionable. Use **bold** for section headers. Keep sections 3 to 5 sentences. Total under 450 words. Never be vague.`;
+
+    const sys = `You are Palmara — a master palm reader with 30 years of study in both Western palmistry and Vedic hasta samudrika shastra. You read palms with the precision of a surgeon and the soul of a poet. Analyze the actual lines, mounts, and features visible in the photo. Be specific about what you see — mention actual line characteristics, not just generic statements. Use **bold** for section headers. 3-5 sentences per section. Total 400-480 words. Never be vague or generic. Every sentence must feel like it was written specifically for this hand.`;
+
     const isSecondHand = !!firstHandReading;
     const otherHand    = handType === "right" ? "left" : "right";
     const userText     = isSecondHand
-      ? `I already read the ${otherHand} hand:\n${firstHandReading}\n\nNow analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}\n\nCombine insights from both hands into a unified, deeper reading.`
-      : `Analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}`;
+      ? `I already read the ${otherHand} hand:\n${firstHandReading}\n\nNow analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}\n${zodiacCtx}\n\nCombine both hands into a unified, deeper reading. Note where the hands confirm each other and where they show interesting contradictions.`
+      : `Analyze this ${handType} hand for a ${category.title} reading.\n\n${catPrompts[category.id]}\n${zodiacCtx}`;
     try {
       const text = await callClaude([{ role:"user", content:[
         { type:"image", source:{ type:"base64", media_type: imageMediaType, data:imageB64 } },
@@ -602,8 +644,25 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
     setActivePillar(pillarId); setLoadingSuggestions(true);
     const pillar     = IMPROVEMENT_PILLARS.find(p => p.id === pillarId);
     const personaCtx = buildPersonaContext();
-    const sys    = `You are Palmara's life optimization coach. Give hyper-specific, science-backed, deeply actionable improvement advice. Use **bold** for key points. Give 4 to 6 real steps people can act on today. No fluff, no filler. ${personaCtx ? "When personas are provided, speak in their actual voice and philosophy. Use their real language and famous phrases naturally throughout." : ""}`;
-    const prompt = `Palm reading result:\n${reading}\n\nCategory: ${category?.title}\nHand: ${handType}${zodiac ? `\nZodiac: ${zodiac}` : ""}\n${personaCtx}\n\nNow give specific improvement advice for this area: ${pillar.label}\n\nBase it on what the palm reading reveals about this specific person. Make it feel deeply personal. ${selectedPersonas.length ? `Channel the voice and philosophy of ${selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" and ")}.` : ""}`;
+    const zd         = zodiac ? ZODIAC_DATA[zodiac] : null;
+
+    const sys = selectedPersonas.length
+      ? `You are delivering personal growth advice in the voice of the chosen mentor(s). Do not break character. Do not say "as Kobe would say" — just speak AS them. Use their actual language, philosophy, and patterns. Be specific. Use **bold** for key action points. 5-7 punchy, actionable steps. No filler. Sound like a private coaching session from this person.`
+      : `You are Palmara's life optimization coach. Give hyper-specific, science-backed, deeply actionable advice. Use **bold** for key points. 5-7 real steps to act on today. No fluff.`;
+
+    const prompt = `PALM READING FOR CONTEXT:
+${reading}
+
+ABOUT THIS PERSON:
+• Reading category: ${category?.title}
+• Hand analyzed: ${handType}${zodiac ? `\n• Zodiac: ${zodiac} (${zd?.element} sign, ruled by ${zd?.planet} — ${zd?.traits})` : ""}
+
+${personaCtx}
+
+NOW GIVE ADVICE FOR: **${pillar.label}**
+
+Ground every piece of advice in what the palm reading above actually revealed about this specific person. Reference specific things from their reading. Make it feel like you know them. ${selectedPersonas.length ? `Speak entirely in the voice and philosophy described above. Every sentence should sound like it came from ${selectedPersonas.map(id => PERSONAS.find(p=>p.id===id)?.name).join(" or ")}'s actual mouth.` : ""}`;
+
     try {
       const text = await callClaude([{ role:"user", content: prompt }], sys);
       setSuggestions(prev => ({ ...(prev||{}), [pillarId]: text }));
@@ -825,13 +884,13 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
               <motion.div
                 initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
                 transition={{ delay:0.08, ease }}
-                className="text-center mb-8"
+                className="text-center mb-6"
               >
                 <motion.div animate={{ scale:[1,1.1,1] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
                   className="text-[30px] mb-3" style={{ color:cat.color }}>{cat.icon}</motion.div>
-                <h2 className="font-garamond text-[30px] text-white mb-2">Choose Your Mentors</h2>
+                <h2 className="font-garamond text-[30px] text-white mb-2">About You</h2>
                 <p className="text-white/30 text-[14px] leading-relaxed">
-                  Pick up to 2 people you admire.<br/>Your growth advice will channel their philosophy.
+                  Your zodiac + mentors shape how your reading is interpreted.
                 </p>
 
                 <AnimatePresence>
@@ -856,6 +915,51 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
                   )}
                 </AnimatePresence>
               </motion.div>
+
+              {/* Zodiac picker */}
+              <motion.div
+                initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.14, ease }}
+                className="mb-6"
+              >
+                <p className="text-white/30 text-[11px] tracking-[2px] uppercase mb-3">Your Zodiac Sign</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {ZODIAC_SIGNS.map(z => {
+                    const zd = ZODIAC_DATA[z];
+                    const sel = zodiac === z;
+                    return (
+                      <motion.button key={z}
+                        whileHover={{ y:-2 }} whileTap={{ scale:0.95 }}
+                        onClick={() => setZodiac(sel ? "" : z)}
+                        className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl cursor-pointer transition-all duration-200 border"
+                        style={{
+                          background: sel ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)",
+                          borderColor: sel ? "rgba(201,168,76,0.6)" : "rgba(255,255,255,0.07)",
+                          boxShadow: sel ? "0 0 16px rgba(201,168,76,0.2)" : "none",
+                        }}
+                      >
+                        <span className="text-[18px] leading-none">{zd.emoji}</span>
+                        <span className="text-[9.5px] tracking-wide transition-colors duration-200"
+                          style={{ color: sel ? "#c9a84c" : "rgba(255,255,255,0.35)" }}>{z}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                {zodiac && (
+                  <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }}
+                    className="mt-2.5 text-[12px] text-center text-white/30 italic">
+                    {zodiac} · {ZODIAC_DATA[zodiac].element} · {ZODIAC_DATA[zodiac].planet} · {ZODIAC_DATA[zodiac].traits.split(",").slice(0,3).join(", ")}
+                  </motion.p>
+                )}
+              </motion.div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-white/[0.06]" />
+                <p className="text-white/20 text-[10px] tracking-[2px] uppercase">Choose Your Mentors</p>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </div>
+              <p className="text-white/25 text-[13px] text-center mb-4">Pick up to 2 people. Your growth advice channels their voice.</p>
 
               {/* 2-col game character grid */}
               <motion.div
@@ -985,17 +1089,15 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
                 ))}
               </motion.div>
 
-              {/* Zodiac */}
-              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.18 }} className="mb-4">
-                <select
-                  value={zodiac} onChange={e => setZodiac(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-[15px] font-crimson cursor-pointer transition-colors duration-200 focus:outline-none focus:border-[rgba(201,168,76,0.4)]"
-                  style={{ color: zodiac ? "#fff" : "rgba(255,255,255,0.25)", appearance:"none" }}
-                >
-                  <option value="" style={{ background:"#1a1520" }}>Add your zodiac sign (optional)</option>
-                  {ZODIAC_SIGNS.map(z => <option key={z} value={z} style={{ background:"#1a1520" }}>{z}</option>)}
-                </select>
-              </motion.div>
+              {/* Zodiac reminder chip */}
+              {zodiac && (
+                <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.16 }}
+                  className="flex items-center justify-center gap-2 mb-4 py-2 rounded-xl"
+                  style={{ background:"rgba(201,168,76,0.08)", border:"1px solid rgba(201,168,76,0.18)" }}>
+                  <span className="text-base">{ZODIAC_DATA[zodiac]?.emoji}</span>
+                  <span className="text-[13px]" style={{ color:"rgba(201,168,76,0.7)" }}>{zodiac} · {ZODIAC_DATA[zodiac]?.element} · {ZODIAC_DATA[zodiac]?.planet}</span>
+                </motion.div>
+              )}
 
               {/* Drop zone */}
               <motion.div
