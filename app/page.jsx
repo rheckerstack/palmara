@@ -438,12 +438,10 @@ When giving improvement advice, channel their actual voice, philosophy, and famo
                 </button>
               ))}
             </div>
-            {cat.id === "full" && (
-              <select value={zodiac} onChange={e => setZodiac(e.target.value)} style={{ width:"100%", padding:"12px 16px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color: zodiac?"#fff":"rgba(255,255,255,0.28)", fontSize:15, fontFamily:"'Crimson Text',serif", marginBottom:14, cursor:"pointer" }}>
-                <option value="">Add your zodiac sign (optional)</option>
-                {ZODIAC_SIGNS.map(z => <option key={z} value={z} style={{ background:"#1a1520" }}>{z}</option>)}
-              </select>
-            )}
+            <select value={zodiac} onChange={e => setZodiac(e.target.value)} style={{ width:"100%", padding:"12px 16px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color: zodiac?"#fff":"rgba(255,255,255,0.28)", fontSize:15, fontFamily:"'Crimson Text',serif", marginBottom:14, cursor:"pointer" }}>
+              <option value="">Add your zodiac sign (optional)</option>
+              {ZODIAC_SIGNS.map(z => <option key={z} value={z} style={{ background:"#1a1520" }}>{z}</option>)}
+            </select>
             <div onDrop={e => { e.preventDefault(); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]); }} onDragOver={e => e.preventDefault()} onClick={() => fileRef.current.click()}
               style={{ border:`2px dashed ${imageUrl ? cat.color : "rgba(255,255,255,0.1)"}`, borderRadius:18, padding:"26px 20px", textAlign:"center", cursor:"pointer", background:"rgba(255,255,255,0.01)", transition:"all .3s", marginBottom:14, minHeight:170, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column" }}>
               {imageUrl ? (
