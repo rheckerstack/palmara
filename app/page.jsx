@@ -29,6 +29,9 @@ const PERSONAS = [
   { id: "musk",    name: "Elon Musk",           emoji: "🚀", trait: "First Principles",       color: "#5ba89e", quote: "When something is important enough, you do it even if the odds are not in your favor." },
   { id: "martha",  name: "Martha Stewart",      emoji: "🌿", trait: "Master Your Craft",      color: "#a8c870", quote: "Life is too complicated not to be orderly." },
   { id: "tony",    name: "Tony Robbins",        emoji: "🔥", trait: "Unleash the Giant",      color: "#ff8c42", quote: "The only impossible journey is the one you never begin." },
+  { id: "goggins", name: "David Goggins",        emoji: "💪", trait: "Can't Hurt Me",           color: "#8ab4d4", quote: "You are stopping you. You are giving up instead of getting hard." },
+  { id: "lisa",    name: "Lisa Nichols",          emoji: "🌟", trait: "Breakthrough Coach",      color: "#e8a0d4", quote: "Your testimony is someone else's survival guide." },
+  { id: "serena",  name: "Serena Williams",       emoji: "🎾", trait: "GOAT Mindset",            color: "#a8e8a0", quote: "A champion is defined not by their wins but by how they recover when they fall." },
 ];
 
 const IMPROVEMENT_PILLARS = [
@@ -68,6 +71,9 @@ const PERSONA_VOICE = {
   musk:    "You ARE Elon Musk. Speak with first-principles thinking — break everything down to physics, question every assumption. Reference civilization-scale thinking, 10x not 10%, physics constraints, and ignoring what's 'impossible'. Say things like 'The first step is to establish that something is possible', 'Physics is the law, everything else is a recommendation'. Be blunt and think in orders of magnitude.",
   martha:  "You ARE Martha Stewart. Speak with precise, elevated craft consciousness. Reference the beauty of doing things properly, attention to detail, and the discipline of mastery. Say things like 'Life is too complicated not to be orderly', 'do it beautifully or don't do it at all'. Emphasize systems, aesthetics, and the pleasure of excellence.",
   tony:    "You ARE Tony Robbins. Speak with explosive energy and pattern-interrupting intensity. Reference peak state, massive action, the RPM system, and the six human needs. Say things like 'The only impossible journey is the one you never begin', 'change your state, change your life', 'progress equals happiness'. Be loud, electric, and demand immediate action.",
+  goggins: "You ARE David Goggins. Speak with brutal, uncompromising intensity — zero tolerance for excuses or comfort. Reference the 40% rule (when you think you're done, you're only 40% there), callusing the mind, taking souls, and the cookie jar method. Say things like 'Stay Hard', 'Can't Hurt Me', 'who's gonna carry the boats', 'you don't know me son'. Be merciless. Suffering is the path. Comfort is the enemy.",
+  lisa:    "You ARE Lisa Nichols. Speak with fierce, warm empowerment — you went from welfare to millionaire and you carry that truth in every word. Reference breakthrough, abundance, refusing to be ordinary, and turning your mess into your message. Say things like 'your testimony is someone else's survival guide', 'refuse to be ordinary', 'decide to thrive', 'you were not built to shrink'. Be nurturing but absolutely uncompromising about transformation.",
+  serena:  "You ARE Serena Williams. Speak with regal power and iron resilience. Reference being underestimated, using doubt as fuel, breaking barriers that weren't supposed to break, and the discipline of a true champion. Say things like 'I really think a champion is defined by how they recover', 'I don't like to lose at anything', 'the best is yet to come'. Be powerful, proud, precise, and fiercely determined.",
 };
 
 const PREMIUM_CATEGORIES = ["health", "full"];
@@ -280,9 +286,9 @@ const STEP_IDX    = { home: 0, persona: 1, upload: 2, loading: 3, result: 3 };
 function ProgressBar({ step }) {
   const active = STEP_IDX[step] ?? 0;
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 pt-2.5 pb-1 px-5"
+    <div className="fixed top-0 left-0 right-0 z-50 pt-2.5 pb-1 flex justify-center px-5"
       style={{ background: "linear-gradient(to bottom, rgba(9,7,15,0.95) 60%, transparent)" }}>
-      <div className="max-w-[520px] mx-auto flex gap-2">
+      <div className="w-full max-w-[520px] flex gap-2">
         {STEP_LABELS.map((label, i) => {
           const done    = i <= active;
           const current = i === active;
@@ -729,7 +735,7 @@ Ground every piece of advice in what the palm reading above actually revealed ab
   const cat = category;
 
   return (
-    <div className="min-h-screen bg-[#09070f] font-crimson relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#09070f] font-crimson relative overflow-x-hidden flex flex-col items-center">
 
       {/* Canvas particle background */}
       <ParticleCanvas />
@@ -753,7 +759,7 @@ Ground every piece of advice in what the palm reading above actually revealed ab
       {/* Progress bar */}
       <ProgressBar step={step} />
 
-      <div className="relative z-[1] max-w-[520px] mx-auto px-5 pb-20 pt-12">
+      <div className="relative z-[1] w-full max-w-[520px] px-5 pb-20 pt-12">
 
         {/* ── Header ── */}
         <motion.div
